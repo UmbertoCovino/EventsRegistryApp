@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/ae_menu_refresh"
+        android:title="@string/refresh"
+        android:icon="@android:drawable/stat_notify_sync"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/ae_menu_which_events"
+        android:checkable="false"
+        android:title="@string/which_events">
+        <menu>
+            <group android:id="@+id/ae_menu_which_events_group"
+                android:checkableBehavior="single">
+
+                <item
+                    android:id="@+id/ae_menu_past_events"
+                    android:title="@string/past_events" />
+                <item
+                    android:id="@+id/ae_menu_upcoming_events"
+                    android:title="@string/upcoming_events"
+                    android:checked="true" />
+                <item
+                    android:id="@+id/ae_menu_between_dates_events"
+                    android:title="@string/between_dates_events" />
+            </group>
+        </menu>
+    </item>
+</menu>

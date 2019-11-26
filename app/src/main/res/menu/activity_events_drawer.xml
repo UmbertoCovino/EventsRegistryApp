@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:id="@+id/ae_navigation_group1">
+        <item
+            android:id="@+id/ae_navigation_add_event"
+            android:icon="@android:drawable/ic_menu_upload"
+            android:title="@string/add_event" />
+    </group>
+
+    <group android:id="@+id/ae_navigation_group2">
+        <item
+            android:id="@+id/ae_navigation_settings"
+            android:icon="@android:drawable/ic_menu_manage"
+            android:title="@string/settings" />
+        <item
+            android:id="@+id/ae_navigation_profile"
+            android:icon="@drawable/icon_user_default"
+            android:tint="@android:color/white"
+            android:title="@string/my_profile" />
+        <item
+            android:id="@+id/ae_navigation_logout"
+            android:icon="@android:drawable/ic_menu_revert"
+            android:title="@string/logout" />
+    </group>
+
+    <group android:id="@+id/ae_navigation_group3">
+        <item
+            android:id="@+id/ae_navigation_login"
+            android:icon="@drawable/icon_login"
+            android:title="@string/login" />
+    </group>
+
+</menu>

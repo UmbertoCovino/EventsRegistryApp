@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RESTEventsRegistry</string>
+
+    <string name="alert_dialog_title_confirm">Conferma</string>
+    <string name="alert_dialog_title_warning">Attenzione</string>
+    <string name="alert_dialog_message_event_addition">Sei sicuro di voler annullare l\'aggiunta?</string>
+    <string name="alert_dialog_message_registration">Sei sicuro di voler annullare la registrazione?</string>
+    <string name="alert_dialog_message_confirm_event_addition">Confermi i dati dell\'evento?</string>
+    <string name="alert_dialog_message_confirm_registration">Confermi i dati dell\'utente?</string>
+    <string name="alert_dialog_positive_button">Sì</string>
+    <string name="alert_dialog_negative_button">No</string>
+    <string name="alert_dialog_message_confirm_event_removal">Sei sicuro di voler rimuovere l\'evento selezionato?</string>
+
+    <string name="login">Accedi</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="not_yet_registered">"Non sei ancora registrato? "</string>
+    <string name="sign_in_now"><u>Registrati subito!</u></string>
+    <string name="continue_without_logging_in"><u>Continua senza accedere</u></string>
+    <string name="empty_email_field_message">Il campo email non può essere vuoto.</string>
+    <string name="invalid_email_field_message">Il campo email non è valido.</string>
+    <string name="empty_password_field_message">Il campo password non può essere vuoto.</string>
+    <string name="incorrect_email_message">L\'email inserita è incorretta.</string>
+    <string name="incorrect_password_message">La password inserita è incorretta.</string>
+    <string name="authenticated_as">"Autenticato come "</string>
+
+    <string name="sign_in">Registrati</string>
+    <string name="empty_name_field_message">Il campo nome non può essere vuoto.</string>
+    <string name="empty_surname_field_message">Il campo cognome non può essere vuoto.</string>
+    <string name="registration">Registrazione</string>
+    <string name="name">Nome</string>
+    <string name="surname">Cognome</string>
+    <string name="choose_image">Scegli foto</string>
+    <string name="duplicated_email_message">L\'email inserita è già registrata.</string>
+    <string name="access_unauthorized_by_the_server">Accesso non autorizzato dal server, verifica le tue credenziali.</string>
+    <string name="successful_registration">, la registrazione è avvenuta con successo.</string>
+    <string name="the_photo_is_optional">(la foto è facoltativa)</string>
+
+    <string name="events">Eventi</string>
+    <string name="when_the">"il "</string>
+    <string name="from">" dalle "</string>
+    <string name="to">" alle "</string>
+    <string name="published_by">"Pubblicato da "</string>
+    <string name="authentication_required">Per visualizzare questo contenuto è necessario essere autenticati.</string>
+    <string name="successful_logout">Logout effettuato.</string>
+    <string name="refresh">Aggiorna</string>
+    <string name="event_removed_successfully">L\'evento selezionato è stato rimosso con successo.</string>
+
+    <string name="settings">Impostazioni</string>
+    <string name="my_profile">Il mio profilo</string>
+    <string name="logout">Esci</string>
+    <string name="anonymous">Anonimo</string>
+
+    <string name="menu_filter">Aggiungi filtro</string>
+    <string name="menu_modify_event">Modifica evento</string>
+    <string name="menu_remove_event">Rimuovi evento</string>
+
+    <string name="add_event">Aggiungi evento</string>
+    <string name="title">Titolo</string>
+    <string name="description">Descrizione</string>
+    <string name="when">Quando</string>
+    <string name="from_time">Dalle</string>
+    <string name="to_time">Alle</string>
+    <string name="empty_title_field_message">Il campo titolo non può essere vuoto.</string>
+    <string name="empty_description_field_message">Il campo descrizione non può essere vuoto.</string>
+    <string name="empty_date_field_message">Il campo data non può essere vuoto.</string>
+    <string name="empty_from_time_field_message">Il campo ora di inizio non può essere vuoto.</string>
+    <string name="empty_to_time_field_message">Il campo ora di fine non può essere vuoto.</string>
+    <string name="successful_add_event">L\'evento è stato aggiunto con successo.</string>
+
+    <string name="modify">Modifica</string>
+    <string name="remove">Rimuovi</string>
+
+    <string name="which_events">Eventi da visualizzare</string>
+    <string name="past_events">Eventi passati</string>
+    <string name="upcoming_events">Prossimi eventi</string>
+    <string name="between_dates_events">Eventi tra due date</string>
+    <string name="apply">Applica</string>
+    <string name="cancel">Cancella</string>
+    <string name="choose_the_two_dates">Scegli le due date</string>
+    <string name="from_date">Dalla data</string>
+    <string name="at_time">alle</string>
+    <string name="to_date">Alla data</string>
+    <string name="empty_from_date_field_message">Il campo data iniziale non può essere vuoto.</string>
+    <string name="empty_to_date_field_message">Il campo data finale non può essere vuoto.</string>
+    <string name="_from_date">"dal "</string>
+    <string name="_to_date">" al "</string>
+    <string name="no_events_to_view">Non ci sono eventi da visualizzare.</string>
+    <string name="done">Fatto</string>
+    <string name="invalid_date_field_message">La data inserita è già passata.</string>
+    <string name="alert_dialog_message_confirm_event_editing">Confermi la modifica dell\'evento?</string>
+    <string name="successful_modified_event">L\'evento è stato modificato con successo.</string>
+    <string name="alert_dialog_message_event_editing">Sei sicuro di voler annullare la modifica?</string>
+    <string name="modify_your_profile">Modifica il tuo profilo</string>
+    <string name="alert_dialog_message_confirm_modify_user">Confermi le modifiche apportate?</string>
+    <string name="successful_modified_user">, il tuo profilo è stato modificato con successo.</string>
+    <string name="alert_dialog_message_user_editing">Sei sicuro di voler annullare la modifica?</string>
+    <string name="permission_granted">Permesso concesso.</string>
+    <string name="permission_not_granted">Permesso non concesso.</string>
+    <string name="alert_dialog_message_permission_not_granted">Sei sicuro di non voler concedere il permesso? Senza di esso alcune funzionalità dell\'app potrebbero non funzionare correttamente.</string>
+    <string name="invalid_from_date_field_message">La data iniziale non può essere successiva alla data finale.</string>
+    <string name="invalid_end_time_field_message">L\'ora di fine non può essere precedente all\'ora di inizio.</string>
+    <string name="pick_image_intent">Apri con</string>
+
+
+</resources>
