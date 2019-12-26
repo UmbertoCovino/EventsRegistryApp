@@ -12,9 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
-import android.os.PersistableBundle;
 import android.provider.MediaStore;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
@@ -24,7 +22,7 @@ import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -32,6 +30,8 @@ import android.widget.Toast;
 import com.gmail.upcovino.resteventsregistry.BuildConfig;
 import com.gmail.upcovino.resteventsregistry.R;
 import com.gmail.upcovino.resteventsregistry.commons.ErrorCodes;
+import com.gmail.upcovino.resteventsregistry.commons.Event;
+import com.gmail.upcovino.resteventsregistry.commons.InvalidEventIdException;
 import com.gmail.upcovino.resteventsregistry.commons.InvalidUserEmailException;
 import com.gmail.upcovino.resteventsregistry.commons.UnauthorizedUserException;
 import com.gmail.upcovino.resteventsregistry.commons.User;
@@ -49,7 +49,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class RegistrationActivity extends AppCompatActivity {
     private Gson gson;
@@ -218,12 +217,39 @@ public class RegistrationActivity extends AppCompatActivity {
         if (isUserAdded) {
             if (userImageViewPath == null) {
                 Toast.makeText(getApplicationContext(), user.getName() + " " + user.getSurname() + getString(R.string.successful_registration), Toast.LENGTH_LONG).show();
-                finish();
+                telegramOptionAlertDialog();
             } else {
                 uploadUserPhoto();
             }
         } else
             Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_LONG).show();
+    }
+
+    private void telegramOptionAlertDialog() {
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Light_Dialog_Alert);
+        else
+            builder = new AlertDialog.Builder(this);
+
+        builder.setTitle(R.string.alert_dialog_title_confirm)
+                .setMessage(R.string.alert_dialog_message_telegram_option)
+                .setPositiveButton(R.string.alert_dialog_positive_button, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        new TelegramTokenGetTask().execute(user.getEmail());
+
+                        finish();
+                    }
+                })
+                .setNegativeButton(R.string.alert_dialog_negative_button, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                })
+                .show();
     }
 
     private void uploadUserPhoto() {
@@ -303,6 +329,46 @@ public class RegistrationActivity extends AppCompatActivity {
 //        super.onResume();
 //        Log.e(Constants.TAG, "onResume");
 //    }
+
+    public class TelegramTokenGetTask extends AsyncTask<String, Void, Integer> {
+
+        @Override
+        protected Integer doInBackground(String... params) {
+            ClientResource cr = new ClientResource(Constants.BASE_URI + "users/" + params[0] + "/telegram");
+            String jsonResponse = null;
+
+            Integer token = null;
+
+            try {
+                jsonResponse = cr.get().getText();
+
+                if (cr.getStatus().getCode() == ErrorCodes.INVALID_USER_EMAIL)
+                    throw gson.fromJson(jsonResponse, InvalidUserEmailException.class);
+
+                token = gson.fromJson(jsonResponse, Integer.class);
+
+            } catch (ResourceException | IOException e1) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + cr.getStatus().getDescription() + " - " + cr.getStatus().getReasonPhrase();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (InvalidUserEmailException e2) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e2.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            }
+
+            return token;
+        }
+
+        @Override
+        protected void onPostExecute(Integer token) {
+            Intent intent = new Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://www.telegram.me/EventsAppBot?start="+token)
+            );
+            startActivity(intent);
+        }
+    }
 
     public class UsersRegistryPostTask extends AsyncTask<String, Void, Boolean> {
 
@@ -389,3 +455,5 @@ public class RegistrationActivity extends AppCompatActivity {
         }
     }
 }
+
+

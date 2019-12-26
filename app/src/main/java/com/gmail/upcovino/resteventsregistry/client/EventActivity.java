@@ -18,9 +18,11 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,6 +64,14 @@ public class EventActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 onBackPressed();
+            }
+        });
+
+        ((Button) findViewById(R.id.aev_subscribe_button)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String id = event.getId();
+                new SubscribePostTask().execute("events/" + id, userLogged.getEmail(), userLogged.getPassword());
             }
         });
 
@@ -208,7 +218,49 @@ public class EventActivity extends AppCompatActivity {
         eventChanged = true;
     }
 
+    public class SubscribePostTask extends AsyncTask<String, Void, Boolean>{
 
+        @Override
+        protected Boolean doInBackground(String... params) {
+            // params[1] == email; params[2] == password
+            ClientResource cr = new ClientResource(Constants.BASE_URI + params[0] + "/subscribers");
+            cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, params[1], params[2]);
+            String jsonResponse = null;
+            toastMessage = null;
+
+            boolean isSubscribed = false;
+
+            try {
+                jsonResponse = cr.post(params[1]).getText();
+
+                if (cr.getStatus().getCode() == ErrorCodes.INVALID_EVENT_ID)
+                    throw gson.fromJson(jsonResponse, InvalidEventIdException.class);
+                else if (cr.getStatus().getCode() == ErrorCodes.UNAUTHORIZED_USER)
+                    throw gson.fromJson(jsonResponse, UnauthorizedUserException.class);
+
+                isSubscribed = gson.fromJson(jsonResponse, boolean.class);
+            } catch (ResourceException | IOException e1) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + cr.getStatus().getDescription() + " - " + cr.getStatus().getReasonPhrase();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (InvalidEventIdException e2) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e2.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (UnauthorizedUserException e3) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e3.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            }
+
+            return isSubscribed;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean isSubscribed) {
+            ((Button) findViewById(R.id.aev_subscribe_button)).setClickable(false);
+        }
+    }
 
 
 

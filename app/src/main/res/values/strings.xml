@@ -7,6 +7,7 @@
     <string name="alert_dialog_message_registration">Are you sure you want to cancel the registration?</string>
     <string name="alert_dialog_message_confirm_event_addition">Confirm the event data?</string>
     <string name="alert_dialog_message_confirm_registration">Confirm the user data?</string>
+    <string name="alert_dialog_message_telegram_option">Do you want enable telegram notifications?</string>
     <string name="alert_dialog_positive_button">Yes</string>
     <string name="alert_dialog_negative_button">No</string>
     <string name="alert_dialog_message_confirm_event_removal">Are you sure you want to remove the event selected?</string>

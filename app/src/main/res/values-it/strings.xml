@@ -8,6 +8,7 @@
     <string name="alert_dialog_message_registration">Sei sicuro di voler annullare la registrazione?</string>
     <string name="alert_dialog_message_confirm_event_addition">Confermi i dati dell\'evento?</string>
     <string name="alert_dialog_message_confirm_registration">Confermi i dati dell\'utente?</string>
+    <string name="alert_dialog_message_telegram_option">Vuoi abilitare le notifiche su telegram?</string>
     <string name="alert_dialog_positive_button">Sì</string>
     <string name="alert_dialog_negative_button">No</string>
     <string name="alert_dialog_message_confirm_event_removal">Sei sicuro di voler rimuovere l\'evento selezionato?</string>
