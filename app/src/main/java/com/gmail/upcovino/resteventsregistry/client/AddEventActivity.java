@@ -221,15 +221,15 @@ public class AddEventActivity extends AppCompatActivity {
                      eventEndTime = null;
                 try {
                     Calendar date = Calendar.getInstance();
-                    date.setTime(Event.DATE_SIMPLE_DATE_FORMAT.parse(dateEditText.getText().toString()));
+                    date.setTime(Event.DATETIME_SDF.parse(dateEditText.getText().toString()));
                     Calendar startTime = Calendar.getInstance();
-                    startTime.setTime(Event.TIME_SIMPLE_DATE_FORMAT.parse(startTimeEditText.getText().toString()));
+                    startTime.setTime(Event.DATETIME_SDF.parse(startTimeEditText.getText().toString()));
                     date.set(Calendar.HOUR_OF_DAY, startTime.get(Calendar.HOUR_OF_DAY));
                     date.set(Calendar.MINUTE, startTime.get(Calendar.MINUTE));
                     eventDate = date.getTime();
 
-                    eventStartTime = Event.TIME_SIMPLE_DATE_FORMAT.parse(startTimeEditText.getText().toString());
-                    eventEndTime = Event.TIME_SIMPLE_DATE_FORMAT.parse(endTimeEditText.getText().toString());
+                    eventStartTime = Event.DATETIME_SDF.parse(startTimeEditText.getText().toString());
+                    eventEndTime = Event.DATETIME_SDF.parse(endTimeEditText.getText().toString());
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -318,9 +318,8 @@ public class AddEventActivity extends AppCompatActivity {
     private void addEvent() {
         try {
             Event event = new Event(titleEditText.getText().toString(),
-                    Event.DATE_SIMPLE_DATE_FORMAT.parse(dateEditText.getText().toString()),
-                    Event.TIME_SIMPLE_DATE_FORMAT.parse(startTimeEditText.getText().toString()),
-                    Event.TIME_SIMPLE_DATE_FORMAT.parse(endTimeEditText.getText().toString()), descriptionEditText.getText().toString());
+                    Event.DATETIME_SDF.parse(startTimeEditText.getText().toString()),
+                    Event.DATETIME_SDF.parse(endTimeEditText.getText().toString()), descriptionEditText.getText().toString());
             new EventsRegistryPostTask().execute("events", userLogged.getEmail(), userLogged.getPassword(), gson.toJson(event));
         } catch (ParseException e) {
             e.printStackTrace();

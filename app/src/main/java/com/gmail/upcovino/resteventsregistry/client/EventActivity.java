@@ -70,7 +70,7 @@ public class EventActivity extends AppCompatActivity {
         ((Button) findViewById(R.id.aev_subscribe_button)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String id = event.getId();
+                int id = event.getId();
                 new SubscribePostTask().execute("events/" + id, userLogged.getEmail(), userLogged.getPassword());
             }
         });
@@ -92,8 +92,8 @@ public class EventActivity extends AppCompatActivity {
         ((CollapsingToolbarLayout) findViewById(R.id.aev_collapsingToolbarLayout)).setTitle(event.getTitle());
 
         ImageView eventPhotoImageView = ((ImageView) findViewById(R.id.aev_eventImageView));
-        if (event.getPhoto() != null) {
-            Bitmap bitmap = BitmapFactory.decodeFile(storageDirectory + "/" + event.getPhoto());
+        if (event.getPhotoPath() != null) {
+            Bitmap bitmap = BitmapFactory.decodeFile(storageDirectory + "/" + event.getPhotoPath());
             eventPhotoImageView.setImageBitmap(bitmap);
 
             eventPhotoImageView.setOnClickListener(new View.OnClickListener() {
@@ -102,7 +102,7 @@ public class EventActivity extends AppCompatActivity {
                     Intent intent = new Intent();
                     intent.setAction(Intent.ACTION_VIEW);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    intent.setDataAndType(FileProvider.getUriForFile(getApplicationContext(), BuildConfig.APPLICATION_ID + ".provider", new File(storageDirectory + "/" + event.getPhoto())), "image/*");
+                    intent.setDataAndType(FileProvider.getUriForFile(getApplicationContext(), BuildConfig.APPLICATION_ID + ".provider", new File(storageDirectory + "/" + event.getPhotoPath())), "image/*");
                     startActivity(intent);
                 }
             });
@@ -110,13 +110,13 @@ public class EventActivity extends AppCompatActivity {
             eventPhotoImageView.setImageResource(R.drawable.default_event_icon);
 
 //        ((TextView) findViewById(R.id.aev_titleTextView)).setText(event.getTitle());
-        ((TextView) findViewById(R.id.aev_whenTextView)).setText(getApplicationContext().getString(R.string.when_the) + Event.DATE_SIMPLE_DATE_FORMAT.format(event.getDate()) + getApplicationContext().getString(R.string.from) + Event.TIME_SIMPLE_DATE_FORMAT.format(event.getStartTime()) + getApplicationContext().getString(R.string.to) + Event.TIME_SIMPLE_DATE_FORMAT.format(event.getEndTime()));
+        ((TextView) findViewById(R.id.aev_whenTextView)).setText(getApplicationContext().getString(R.string.when_the) + getApplicationContext().getString(R.string.from) + Event.DATETIME_SDF.format(event.getStartDate()) + getApplicationContext().getString(R.string.to) + Event.DATETIME_SDF.format(event.getEndDate()));
         ((TextView) findViewById(R.id.aev_descriptionTextView)).setText(event.getDescription());
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (event.getUser().getEmail().equals(userLogged.getEmail())) {
+        if (event.getOwner().getEmail().equals(userLogged.getEmail())) {
             getMenuInflater().inflate(R.menu.activity_event_user_menu, menu);
             return true;
         }
@@ -127,7 +127,7 @@ public class EventActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.aev_menu_remove:
-                confirmRemoveEventAlertDialog(event.getId());
+                confirmRemoveEventAlertDialog(event.getId()+"");
                 break;
             case R.id.aev_menu_edit:
                 Intent intent = new Intent(getApplicationContext(), ModifyEventActivity.class);

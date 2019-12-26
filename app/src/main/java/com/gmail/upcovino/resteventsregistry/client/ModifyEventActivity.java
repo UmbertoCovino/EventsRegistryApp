@@ -110,12 +110,12 @@ public class ModifyEventActivity extends AppCompatActivity {
 
         titleEditText.setText(event.getTitle());
         descriptionEditText.setText(event.getDescription());
-        dateEditText.setText(Event.DATE_SIMPLE_DATE_FORMAT.format(event.getDate()));
-        startTimeEditText.setText(Event.TIME_SIMPLE_DATE_FORMAT.format(event.getStartTime()));
-        endTimeEditText.setText(Event.TIME_SIMPLE_DATE_FORMAT.format(event.getEndTime()));
+        dateEditText.setText("deprecated");
+        startTimeEditText.setText(Event.DATETIME_SDF.format(event.getStartDate()));
+        endTimeEditText.setText(Event.DATETIME_SDF.format(event.getEndDate()));
 
-        if (event.getPhoto() != null) {
-            Bitmap bitmap = BitmapFactory.decodeFile(storageDirectory + "/" + event.getPhoto());
+        if (event.getPhotoPath() != null) {
+            Bitmap bitmap = BitmapFactory.decodeFile(storageDirectory + "/" + event.getPhotoPath());
             eventImageView.setImageBitmap(bitmap);
 
             eventImageView.setOnClickListener(new View.OnClickListener() {
@@ -124,7 +124,7 @@ public class ModifyEventActivity extends AppCompatActivity {
                     Intent intent = new Intent();
                     intent.setAction(Intent.ACTION_VIEW);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    intent.setDataAndType(FileProvider.getUriForFile(getApplicationContext(), BuildConfig.APPLICATION_ID + ".provider", new File(storageDirectory + "/" + event.getPhoto())), "image/*");
+                    intent.setDataAndType(FileProvider.getUriForFile(getApplicationContext(), BuildConfig.APPLICATION_ID + ".provider", new File(storageDirectory + "/" + event.getPhotoPath())), "image/*");
                     startActivity(intent);
                 }
             });
@@ -248,15 +248,15 @@ public class ModifyEventActivity extends AppCompatActivity {
                      eventEndTime = null;
                 try {
                     Calendar date = Calendar.getInstance();
-                    date.setTime(Event.DATE_SIMPLE_DATE_FORMAT.parse(dateEditText.getText().toString()));
+                    date.setTime(Event.DATETIME_SDF.parse(dateEditText.getText().toString()));
                     Calendar startTime = Calendar.getInstance();
-                    startTime.setTime(Event.TIME_SIMPLE_DATE_FORMAT.parse(startTimeEditText.getText().toString()));
+                    startTime.setTime(Event.DATETIME_SDF.parse(startTimeEditText.getText().toString()));
                     date.set(Calendar.HOUR_OF_DAY, startTime.get(Calendar.HOUR_OF_DAY));
                     date.set(Calendar.MINUTE, startTime.get(Calendar.MINUTE));
                     eventDate = date.getTime();
 
-                    eventStartTime = Event.TIME_SIMPLE_DATE_FORMAT.parse(startTimeEditText.getText().toString());
-                    eventEndTime = Event.TIME_SIMPLE_DATE_FORMAT.parse(endTimeEditText.getText().toString());
+                    eventStartTime = Event.DATETIME_SDF.parse(startTimeEditText.getText().toString());
+                    eventEndTime = Event.DATETIME_SDF.parse(endTimeEditText.getText().toString());
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -345,9 +345,8 @@ public class ModifyEventActivity extends AppCompatActivity {
     private void modifyEvent() {
         try {
             event.setTitle(titleEditText.getText().toString());
-            event.setDate(Event.DATE_SIMPLE_DATE_FORMAT.parse(dateEditText.getText().toString()));
-            event.setStartTime(Event.TIME_SIMPLE_DATE_FORMAT.parse(startTimeEditText.getText().toString()));
-            event.setEndTime(Event.TIME_SIMPLE_DATE_FORMAT.parse(endTimeEditText.getText().toString()));
+            event.setStartDate(Event.DATETIME_SDF.parse(startTimeEditText.getText().toString()));
+            event.setEndDate(Event.DATETIME_SDF.parse(endTimeEditText.getText().toString()));
             event.setDescription(descriptionEditText.getText().toString());
 
             new EventsRegistryPutTask().execute("events", userLogged.getEmail(), userLogged.getPassword(), gson.toJson(event));
@@ -374,7 +373,7 @@ public class ModifyEventActivity extends AppCompatActivity {
     private void uploadEventPhotoCallback(boolean isPhotoModified) {
         try {
             if (isPhotoModified) {
-                Constants.copyFile(new File(eventImageViewPath), new File(storageDirectory + "/" + event.getPhoto()));
+                Constants.copyFile(new File(eventImageViewPath), new File(storageDirectory + "/" + event.getPhotoPath()));
                 eventSuccessfullyModified();
             } else
                 Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_LONG).show();

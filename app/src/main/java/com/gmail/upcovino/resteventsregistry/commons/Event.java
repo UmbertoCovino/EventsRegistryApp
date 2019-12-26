@@ -6,32 +6,66 @@ import java.util.Date;
 
 public class Event implements Serializable {
 	private static final long serialVersionUID = -9209880685041545499L;
-	public static final SimpleDateFormat DATE_SIMPLE_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
-	public static final SimpleDateFormat TIME_SIMPLE_DATE_FORMAT = new SimpleDateFormat("HH:mm");
-	public static final SimpleDateFormat DATETIME_SIMPLE_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy-HH:mm");
+	public static final SimpleDateFormat DATE_SDF = new SimpleDateFormat("dd.MM.yyyy");
+	public static final SimpleDateFormat TIME_SDF = new SimpleDateFormat("HH:mm");
+	public static final SimpleDateFormat DATETIME_SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-	private String id; // String uniqueID = UUID.randomUUID().toString();
+	private Integer id;			// è facoltativo: non sempre ce lo hai quando crei quest'oggetto (l'id sta nel DB)
 	private String title;
-	private Date date;
-	private Date startTime, endTime;
+	private Date startDate,
+				 endDate;
 	private String description;
-	private String photo;
-	private String userEmail;
-	private User user;
-
-	public Event(String title, Date date, Date startTime, Date endTime, String description) {
+	private String photoPath;	// è facoltativo: l'evento potrebbe non avere una foto
+	private User owner;			// è facoltativo: non sempre serve associare l'intero oggetto User all'evento
+	private String ownerEmail;	// è facoltativo: non sempre ce lo hai quando crei quest'oggetto (sta nel DB)
+	
+	
+	
+	public Event(String title, Date startDate, Date endDate, String description) {
 		this.title = title;
-		this.date = date;
-		this.startTime = startTime;
-		this.endTime = endTime;
+		this.startDate = startDate;
+		this.endDate = endDate;
 		this.description = description;
+		this.id = null;
+		this.owner = null;
+		this.ownerEmail = null;
 	}
 
-	public String getId() {
+	public Event(String title, Date startDate, Date endDate, String description, String photoPath) {
+		this(title, startDate, endDate, description);
+		this.photoPath = photoPath;
+	}
+
+	public Event(String title, Date startDate, Date endDate, String description, String photoPath, String ownerEmail) {
+		this(title, startDate, endDate, description, photoPath);
+		this.ownerEmail = ownerEmail;
+	}
+	
+	public Event(int id, String title, Date startDate, Date endDate, String description) {
+		this(title, startDate, endDate, description);
+		this.id = id;
+	}
+
+	public Event(int id, String title, Date startDate, Date endDate, String description, String photoPath) {
+		this(id, title, startDate, endDate, description);
+		this.photoPath = photoPath;
+	}
+
+	public Event(int id, String title, Date startDate, Date endDate, String description, String photoPath, String ownerEmail) {
+		this(id, title, startDate, endDate, description, photoPath);
+		this.ownerEmail = ownerEmail;
+	}
+
+	public Event(int id, String title, Date startDate, Date endDate, String description, String photoPath, String ownerEmail, User owner) {
+		this(id, title, startDate, endDate, description, photoPath, ownerEmail);
+		this.owner = owner;
+	}
+
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
@@ -43,28 +77,28 @@ public class Event implements Serializable {
 		this.title = title;
 	}
 
-	public Date getDate() {
-		return date;
+	public Date getStartDate() {
+		return startDate;
 	}
 
-	public void setDate(Date date) {
-		this.date = date;
+	public String getFormattedStartDate() {
+		return DATETIME_SDF.format(startDate);
 	}
 
-	public Date getStartTime() {
-		return startTime;
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
 	}
 
-	public void setStartTime(Date startTime) {
-		this.startTime = startTime;
+	public Date getEndDate() {
+		return endDate;
 	}
 
-	public Date getEndTime() {
-		return endTime;
+	public String getFormattedEndDate() {
+		return DATETIME_SDF.format(endDate);
 	}
 
-	public void setEndTime(Date endTime) {
-		this.endTime = endTime;
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
 	}
 
 	public String getDescription() {
@@ -75,41 +109,32 @@ public class Event implements Serializable {
 		this.description = description;
 	}
 
-	public String getPhoto() {
-		return photo;
+	public String getPhotoPath() {
+		return photoPath;
 	}
 
-	public void setPhoto(String photo) {
-		this.photo = photo;
+	public void setPhotoPath(String photoPath) {
+		this.photoPath = photoPath;
 	}
 
-	public String getUserEmail() {
-		return userEmail;
+	public User getOwner() {
+		return owner;
 	}
 
-	public void setUserEmail(String userEmail) {
-		this.userEmail = userEmail;
+	public void setOwner(User owner) {
+		this.owner = owner;
 	}
 
-	public User getUser() {
-		return user;
+	public String getOwnerEmail() {
+		return ownerEmail;
 	}
 
-	public void setUser(User user) {
-		this.user = user;
+	public void setOwnerEmail(String ownerEmail) {
+		this.ownerEmail = ownerEmail;
 	}
 
 	@Override
 	public String toString() {
-		return "Event [id=" + id + ", title=" + title + ", date=" + DATE_SIMPLE_DATE_FORMAT.format(date) + ", startTime=" + TIME_SIMPLE_DATE_FORMAT.format(startTime) + ", endTime=" + TIME_SIMPLE_DATE_FORMAT.format(endTime) + ", description=" + description + ", photo=" + photo + ", user=" + user.toString() + "]";
-	}
-
-	public Event clone() {
-		Event event = new Event(title, date, startTime, endTime, description);
-		event.setId(id);
-		event.setPhoto(photo);
-		event.setUserEmail(userEmail);
-
-		return event;
+		return "Event [id=" + id + ", title=" + title + ", startDate=" + getFormattedStartDate() + ", endDate=" + getFormattedEndDate() + ", description=" + description + ", photoPath=" + photoPath + ", owner=" + owner + "]";
 	}
 }

@@ -12,7 +12,7 @@ import java.io.OutputStream;
 
 public class Constants {
     public static final int IMAGE_PICKER = 1;
-    public static final String BASE_URI = "http://10.0.2.2:8182/eventsRegistry/",
+    public static final String BASE_URI = "http://192.168.1.7:8183/eventsRegistry/",
                                TAG = "EventsRegistry",
                                USER = "user",
                                EVENT = "event",

@@ -157,7 +157,7 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
         if (savedInstanceState != null) {
             // do nothing
         } else {
-            eventsRegistryGetUri = "events/after/" + Event.DATETIME_SIMPLE_DATE_FORMAT.format(new Date());
+            eventsRegistryGetUri = "events/after/" + Event.DATETIME_SDF.format(new Date());
 
             refreshEvents();
         }
@@ -180,7 +180,7 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
         String token1 = st.nextToken();
         String token2 = st.nextToken();
         if (token2.equals("before") || token2.equals("after"))
-            eventsRegistryGetUri = token1 + "/" + token2 + "/" + Event.DATETIME_SIMPLE_DATE_FORMAT.format(new Date());
+            eventsRegistryGetUri = token1 + "/" + token2 + "/" + Event.DATETIME_SDF.format(new Date());
 
         new EventsRegistryGetTask().execute(eventsRegistryGetUri);
     }
@@ -304,7 +304,7 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                 item.setChecked(true);
                 itemCheckedId = item.getItemId();
 
-                eventsRegistryGetUri = "events/before/" + Event.DATETIME_SIMPLE_DATE_FORMAT.format(new Date());
+                eventsRegistryGetUri = "events/before/" + Event.DATETIME_SDF.format(new Date());
                 refreshEvents();
                 getSupportActionBar().setTitle(R.string.past_events);
                 ((TextView) findViewById(R.id.ae_filterTextView)).setVisibility(View.GONE);
@@ -313,7 +313,7 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                 item.setChecked(true);
                 itemCheckedId = item.getItemId();
 
-                eventsRegistryGetUri = "events/after/" + Event.DATETIME_SIMPLE_DATE_FORMAT.format(new Date());
+                eventsRegistryGetUri = "events/after/" + Event.DATETIME_SDF.format(new Date());
                 refreshEvents();
                 getSupportActionBar().setTitle(R.string.upcoming_events);
                 ((TextView) findViewById(R.id.ae_filterTextView)).setVisibility(View.GONE);
@@ -367,17 +367,17 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                         Date toDate = null;
                         try {
                             Calendar _fromDate = Calendar.getInstance();
-                            _fromDate.setTime(Event.DATE_SIMPLE_DATE_FORMAT.parse(fromDateEditText.getText().toString()));
+                            _fromDate.setTime(Event.DATETIME_SDF.parse(fromDateEditText.getText().toString()));
                             Calendar fromTime = Calendar.getInstance();
-                            fromTime.setTime(Event.TIME_SIMPLE_DATE_FORMAT.parse(fromTimeEditText.getText().toString()));
+                            fromTime.setTime(Event.DATETIME_SDF.parse(fromTimeEditText.getText().toString()));
                             _fromDate.set(Calendar.HOUR_OF_DAY, fromTime.get(Calendar.HOUR_OF_DAY));
                             _fromDate.set(Calendar.MINUTE, fromTime.get(Calendar.MINUTE));
                             fromDate = _fromDate.getTime();
 
                             Calendar _toDate = Calendar.getInstance();
-                            _toDate.setTime(Event.DATE_SIMPLE_DATE_FORMAT.parse(toDateEditText.getText().toString()));
+                            _toDate.setTime(Event.DATETIME_SDF.parse(toDateEditText.getText().toString()));
                             Calendar toTime = Calendar.getInstance();
-                            toTime.setTime(Event.TIME_SIMPLE_DATE_FORMAT.parse(toTimeEditText.getText().toString()));
+                            toTime.setTime(Event.DATETIME_SDF.parse(toTimeEditText.getText().toString()));
                             _toDate.set(Calendar.HOUR_OF_DAY, toTime.get(Calendar.HOUR_OF_DAY));
                             _toDate.set(Calendar.MINUTE, toTime.get(Calendar.MINUTE));
                             toDate = _toDate.getTime();
@@ -401,7 +401,7 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                             filterToDate = toDateEditText.getText().toString();
                             filterToTime = toTimeEditText.getText().toString();
 
-                            eventsRegistryGetUri = "events/between/" + Event.DATETIME_SIMPLE_DATE_FORMAT.format(fromDate) + "/" + Event.DATETIME_SIMPLE_DATE_FORMAT.format(toDate);
+                            eventsRegistryGetUri = "events/between/" + Event.DATETIME_SDF.format(fromDate) + "/" + Event.DATETIME_SDF.format(toDate);
                             refreshEvents();
 
                             if (item != null) {
@@ -519,7 +519,7 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
     }
 
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        if (userLogged != null && events.get(eventsListViewSelectedItemPosition).getUser().getEmail().equals(userLogged.getEmail())) {
+        if (userLogged != null && events.get(eventsListViewSelectedItemPosition).getOwner().getEmail().equals(userLogged.getEmail())) {
             super.onCreateContextMenu(menu, v, menuInfo);
             MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.activity_events_context_menu, menu);
@@ -538,7 +538,7 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                 startActivityForResult(intent, MODIFY_EVENT_ACTIVITY_RESULT_NUMBER);
                 return true;
             case R.id.ae_remove_event:
-                confirmRemoveEventAlertDialog(events.get(listItemInfo.position).getId());
+                confirmRemoveEventAlertDialog(events.get(listItemInfo.position).getId()+"");
                 return true;
         }
         return false;
@@ -639,8 +639,8 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
     }
 
     private void setPhotoOfEventWithId(Event event, final ImageView eventPhotoImageView) {
-        if (event.getPhoto() != null) {
-            File eventPhotoFile = new File(storageDirectory + "/" + event.getPhoto());
+        if (event.getPhotoPath() != null) {
+            File eventPhotoFile = new File(storageDirectory + "/" + event.getPhotoPath());
 
             if (!eventPhotoFile.exists()) {
                 //Log.e(Constants.TAG, "RECUPERO " + event.getId());
@@ -654,10 +654,10 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
     private void setPhotoOfEventWithIdCallback(Bitmap bitmap, Event event, ImageView eventPhotoImageView) {
         if (bitmap != null) {
             eventPhotoImageView.setImageBitmap(bitmap);
-            MediaScannerConnection.scanFile(this, new String[] {storageDirectory + "/" + event.getPhoto()}, new String[] {"image/jpeg"}, null); // per aggiornare la galleria
+            MediaScannerConnection.scanFile(this, new String[] {storageDirectory + "/" + event.getPhotoPath()}, new String[] {"image/jpeg"}, null); // per aggiornare la galleria
         } else {
             eventPhotoImageView.setImageResource(R.drawable.default_event_icon);
-            event.setPhoto(null);
+            event.setPhotoPath(null);
         }
     }
 
@@ -774,8 +774,8 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
             TextView userNameTextView   = (TextView) listViewItem.findViewById(R.id.aeli_userNameTextView);
 
             final Event event = events.get(position);
-            if (!eventsUsers.containsKey(event.getUser().getEmail()))         // OPZIONALE
-                eventsUsers.put(event.getUser().getEmail(), event.getUser()); // OPZIONALE
+            if (!eventsUsers.containsKey(event.getOwner().getEmail()))         // OPZIONALE
+                eventsUsers.put(event.getOwner().getEmail(), event.getOwner()); // OPZIONALE
 
             SpannableString content = new SpannableString(event.getTitle());
             content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
@@ -787,7 +787,7 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                 }
             });
 
-            whenTextView.setText(getContext().getString(R.string.when_the) + Event.DATE_SIMPLE_DATE_FORMAT.format(event.getDate()) + getContext().getString(R.string.from) + Event.TIME_SIMPLE_DATE_FORMAT.format(event.getStartTime()) + getContext().getString(R.string.to) + Event.TIME_SIMPLE_DATE_FORMAT.format(event.getEndTime()));
+            whenTextView.setText(getContext().getString(R.string.when_the) + getContext().getString(R.string.from) + Event.DATETIME_SDF.format(event.getStartDate()) + getContext().getString(R.string.to) + Event.DATETIME_SDF.format(event.getEndDate()));
             descriptionTextView.setText(event.getDescription());
 
             eventPhotoImageView.setPadding(0, 0, 0, 0);
@@ -796,11 +796,11 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
             eventPhotoImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (event.getPhoto() != null) {
+                    if (event.getPhotoPath() != null) {
                         Intent intent = new Intent();
                         intent.setAction(Intent.ACTION_VIEW);
                         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        intent.setDataAndType(FileProvider.getUriForFile(getContext(), BuildConfig.APPLICATION_ID + ".provider", new File(storageDirectory + "/" + event.getPhoto())), "image/*");
+                        intent.setDataAndType(FileProvider.getUriForFile(getContext(), BuildConfig.APPLICATION_ID + ".provider", new File(storageDirectory + "/" + event.getPhotoPath())), "image/*");
                         startActivity(intent);
                     } else {
                         eventPhotoImageView.setFocusable(false);
@@ -813,21 +813,21 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
             userPhotoImageView.setPadding(0, 0, 0, 0);
             userPhotoImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             //setPhotoOfUserWithEmail(event.getUser(), userPhotoImageView);                           // alternativa all'OPZIONALE
-            setPhotoOfUserWithEmail(eventsUsers.get(event.getUser().getEmail()), userPhotoImageView); // OPZIONALE
+            setPhotoOfUserWithEmail(eventsUsers.get(event.getOwner().getEmail()), userPhotoImageView); // OPZIONALE
             userPhotoImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    openUserActivity(eventsUsers.get(event.getUser().getEmail()));
+                    openUserActivity(eventsUsers.get(event.getOwner().getEmail()));
                 }
             });
 
-            content = new SpannableString(event.getUser().getName() + " " + event.getUser().getSurname());
+            content = new SpannableString(event.getOwner().getName() + " " + event.getOwner().getSurname());
             content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
             userNameTextView.setText(content);
             userNameTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    openUserActivity(eventsUsers.get(event.getUser().getEmail()));
+                    openUserActivity(eventsUsers.get(event.getOwner().getEmail()));
                 }
             });
 
