@@ -1,1 +1,10 @@
 language: android
+
+script: - ./gradlew build
+
+notifications:
+  email:
+    - angelocaporaso03@gmail.com
+    - upcovino@gmail.com
+  on_success: change
+  on_failure: always
