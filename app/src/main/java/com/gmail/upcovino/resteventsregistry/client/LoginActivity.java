@@ -23,16 +23,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gmail.upcovino.resteventsregistry.R;
-import com.gmail.upcovino.resteventsregistry.commons.ErrorCodes;
-import com.gmail.upcovino.resteventsregistry.commons.InvalidUserEmailException;
 import com.gmail.upcovino.resteventsregistry.commons.User;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.ErrorCodes;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.InvalidUserEmailException;
 import com.google.gson.Gson;
 
+import org.restlet.data.MediaType;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
 public class LoginActivity extends AppCompatActivity {
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE_REQUEST_CODE = 2;
@@ -196,7 +197,9 @@ public class LoginActivity extends AppCompatActivity {
             User user = null;
 
             try {
-                jsonResponse = cr.post(gson.toJson(params[1], String.class)).getText();
+                StringRepresentation sr = new StringRepresentation(gson.toJson(params[1], String.class), MediaType.APPLICATION_JSON);
+
+                jsonResponse = cr.post(sr).getText();
 
                 if (cr.getStatus().getCode() == ErrorCodes.INVALID_USER_EMAIL)
                     throw gson.fromJson(jsonResponse, InvalidUserEmailException.class);

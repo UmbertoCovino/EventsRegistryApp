@@ -3,16 +3,23 @@ package com.gmail.upcovino.resteventsregistry.client;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.gmail.upcovino.resteventsregistry.commons.Event;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.ParseException;
+import java.util.Date;
 
 public class Constants {
     public static final int IMAGE_PICKER = 1;
-    public static final String BASE_URI = "http://192.168.1.7:8183/eventsRegistry/",
+    public static final String BASE_URI = "http://192.168.1.8:8183/eventsRegistry/",
                                TAG = "EventsRegistry",
                                USER = "user",
                                EVENT = "event",
@@ -55,6 +62,26 @@ public class Constants {
             }
         } finally {
             in.close();
+        }
+    }
+
+    static class DateTypeAdapter extends TypeAdapter<Date> {
+
+        @Override
+        public void write(JsonWriter out, Date value) throws IOException {
+            if (value != null)
+                out.value(Event.DATETIME_SDF.format(value));
+            else
+                out.nullValue();
+        }
+
+        @Override
+        public Date read(JsonReader in) throws IOException {
+            try {
+                return Event.DATETIME_SDF.parse(in.nextString());
+            } catch (ParseException e) {
+                throw new IOException("Invalid format for datetime: correct one is 'yyyy-MM-dd HH:mm:ss'.");
+            }
         }
     }
 }

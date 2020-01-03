@@ -105,6 +105,7 @@
     <string name="alert_dialog_message_permission_not_granted">Are you sure you do not want to grant permission? Without it some features of the app may not work properly.</string>
     <string name="invalid_from_date_field_message">The initial date cannot be after the final date.</string>
     <string name="invalid_end_time_field_message">The end time cannot be earlier than the start time.</string>
+    <string name="invalid_end_date_field_message">The end date cannot be earlier than the start date.</string>
     <string name="pick_image_intent">Open with</string>
 
 

@@ -32,30 +32,25 @@ import android.widget.Toast;
 
 import com.gmail.upcovino.resteventsregistry.BuildConfig;
 import com.gmail.upcovino.resteventsregistry.R;
-import com.gmail.upcovino.resteventsregistry.commons.ErrorCodes;
-import com.gmail.upcovino.resteventsregistry.commons.Event;
-import com.gmail.upcovino.resteventsregistry.commons.InvalidUserEmailException;
-import com.gmail.upcovino.resteventsregistry.commons.UnauthorizedUserException;
 import com.gmail.upcovino.resteventsregistry.commons.User;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.ErrorCodes;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.InvalidUserEmailException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.UnauthorizedUserException;
 import com.google.gson.Gson;
 
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.representation.FileRepresentation;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class ModifyUserActivity extends AppCompatActivity {
     private Gson gson;
@@ -364,7 +359,8 @@ public class ModifyUserActivity extends AppCompatActivity {
             boolean isUserModified = false;
 
             try {
-                jsonResponse = cr.put(params[3]).getText();
+                StringRepresentation sr = new StringRepresentation(params[3], MediaType.APPLICATION_JSON);
+                jsonResponse = cr.put(sr).getText();
 
                 if (cr.getStatus().getCode() == ErrorCodes.INVALID_USER_EMAIL)
                     throw gson.fromJson(jsonResponse, InvalidUserEmailException.class);

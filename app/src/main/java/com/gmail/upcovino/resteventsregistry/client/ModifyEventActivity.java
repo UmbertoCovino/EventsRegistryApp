@@ -36,16 +36,21 @@ import android.widget.Toast;
 
 import com.gmail.upcovino.resteventsregistry.BuildConfig;
 import com.gmail.upcovino.resteventsregistry.R;
-import com.gmail.upcovino.resteventsregistry.commons.ErrorCodes;
 import com.gmail.upcovino.resteventsregistry.commons.Event;
-import com.gmail.upcovino.resteventsregistry.commons.InvalidEventIdException;
-import com.gmail.upcovino.resteventsregistry.commons.UnauthorizedUserException;
 import com.gmail.upcovino.resteventsregistry.commons.User;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.ErrorCodes;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.GenericSQLException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.InvalidEventIdException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.JsonParsingException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.UnauthorizedUserException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.VoidClassFieldException;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.representation.FileRepresentation;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
@@ -58,7 +63,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.concurrent.ExecutionException;
 
 public class ModifyEventActivity extends AppCompatActivity {
     private Gson gson;
@@ -68,7 +72,8 @@ public class ModifyEventActivity extends AppCompatActivity {
 
     private EditText titleEditText;
     private EditText descriptionEditText;
-    private EditText dateEditText;
+    private EditText dateStartEditText;
+    private EditText dateEndEditText;
     private EditText startTimeEditText;
     private EditText endTimeEditText;
     private ImageView eventImageView;
@@ -91,7 +96,10 @@ public class ModifyEventActivity extends AppCompatActivity {
         });
         ((CollapsingToolbarLayout) findViewById(R.id.ade_collapsingToolbarLayout)).setTitle(getResources().getString(R.string.menu_modify_event));
 
-        gson = new Gson();
+        //gson = new Gson();
+        gson = new GsonBuilder()
+                .registerTypeAdapter(Date.class, new Constants.DateTypeAdapter())
+                .create();
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String userJson = preferences.getString(Constants.USER, null);
@@ -103,16 +111,20 @@ public class ModifyEventActivity extends AppCompatActivity {
 
         titleEditText = (EditText) findViewById(R.id.ade_titleEditText);
         descriptionEditText = (EditText) findViewById(R.id.ade_descriptionEditText);
-        dateEditText = (EditText) findViewById(R.id.ade_dateEditText);
+        dateStartEditText = (EditText) findViewById(R.id.ade_dateStartEditText);
+        dateEndEditText = (EditText) findViewById(R.id.ade_dateEndEditText);
         startTimeEditText = (EditText) findViewById(R.id.ade_startTimeEditText);
         endTimeEditText = (EditText) findViewById(R.id.ade_endTimeEditText);
         eventImageView = (ImageView) findViewById(R.id.ade_eventImageView);
 
         titleEditText.setText(event.getTitle());
         descriptionEditText.setText(event.getDescription());
-        dateEditText.setText("deprecated");
-        startTimeEditText.setText(Event.DATETIME_SDF.format(event.getStartDate()));
-        endTimeEditText.setText(Event.DATETIME_SDF.format(event.getEndDate()));
+        String startDateString = Event.DATETIME_SDF.format(event.getStartDate());
+        String endDateString = Event.DATETIME_SDF.format(event.getEndDate());
+        startTimeEditText.setText(startDateString.substring(10));
+        endTimeEditText.setText(endDateString.substring(10));
+        dateStartEditText.setText(startDateString.substring(0, 9));
+        dateEndEditText.setText(endDateString.substring(0, 9));
 
         if (event.getPhotoPath() != null) {
             Bitmap bitmap = BitmapFactory.decodeFile(storageDirectory + "/" + event.getPhotoPath());
@@ -131,7 +143,7 @@ public class ModifyEventActivity extends AppCompatActivity {
         } else
             eventImageView.setImageResource(R.drawable.default_event_icon);
 
-        dateEditText.setOnClickListener(new View.OnClickListener() {
+        dateStartEditText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Date todayDate = new Date();
@@ -139,17 +151,43 @@ public class ModifyEventActivity extends AppCompatActivity {
                 int month = Integer.parseInt(new SimpleDateFormat("MM").format(todayDate)) - 1;
                 int year = Integer.parseInt(new SimpleDateFormat("yyyy").format(todayDate));
 
-                if (dateEditText.getText().length() != 0) {
-                    StringTokenizer st = new StringTokenizer(dateEditText.getText().toString(), ".");
-                    dayOfMonth = Integer.parseInt(st.nextToken());
-                    month      = Integer.parseInt(st.nextToken()) - 1;
+                if (dateStartEditText.getText().length() != 0) {
+                    StringTokenizer st = new StringTokenizer(dateStartEditText.getText().toString(), "-");
                     year       = Integer.parseInt(st.nextToken());
+                    month      = Integer.parseInt(st.nextToken());
+                    dayOfMonth = Integer.parseInt(st.nextToken()) - 1;
                 }
 
                 DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(), new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        dateEditText.setText(String.format("%02d.%02d.%04d", dayOfMonth, month + 1, year));
+                        dateStartEditText.setText(String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth));
+                    }
+                }, year, month, dayOfMonth);
+
+                datePickerDialog.show();
+            }
+        });
+
+        dateEndEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Date todayDate = new Date();
+                int dayOfMonth = Integer.parseInt(new SimpleDateFormat("dd").format(todayDate));
+                int month = Integer.parseInt(new SimpleDateFormat("MM").format(todayDate)) - 1;
+                int year = Integer.parseInt(new SimpleDateFormat("yyyy").format(todayDate));
+
+                if (dateEndEditText.getText().length() != 0) {
+                    StringTokenizer st = new StringTokenizer(dateStartEditText.getText().toString(), "-");
+                    year       = Integer.parseInt(st.nextToken());
+                    month      = Integer.parseInt(st.nextToken());
+                    dayOfMonth = Integer.parseInt(st.nextToken()) - 1;
+                }
+
+                DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                        dateEndEditText.setText(String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth));
                     }
                 }, year, month, dayOfMonth);
 
@@ -243,20 +281,21 @@ public class ModifyEventActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_done:
-                Date eventDate = null,
-                     eventStartTime = null,
-                     eventEndTime = null;
+                Date eventDate = null, eventStartTime = null,
+                        eventEndTime = null;
                 try {
                     Calendar date = Calendar.getInstance();
-                    date.setTime(Event.DATETIME_SDF.parse(dateEditText.getText().toString()));
+                    date.setTime(Event.DATE_SDF.parse(dateStartEditText.getText().toString()));
                     Calendar startTime = Calendar.getInstance();
-                    startTime.setTime(Event.DATETIME_SDF.parse(startTimeEditText.getText().toString()));
+                    startTime.setTime(Event.TIME_SDF.parse(startTimeEditText.getText().toString()));
                     date.set(Calendar.HOUR_OF_DAY, startTime.get(Calendar.HOUR_OF_DAY));
                     date.set(Calendar.MINUTE, startTime.get(Calendar.MINUTE));
                     eventDate = date.getTime();
 
-                    eventStartTime = Event.DATETIME_SDF.parse(startTimeEditText.getText().toString());
-                    eventEndTime = Event.DATETIME_SDF.parse(endTimeEditText.getText().toString());
+                    eventStartTime = Event.DATETIME_SDF.parse(dateStartEditText.getText().toString() + " " +
+                            startTimeEditText.getText().toString() + ":00");
+                    eventEndTime = Event.DATETIME_SDF.parse(dateEndEditText.getText().toString() + " " +
+                            endTimeEditText.getText().toString()+":00");
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -265,7 +304,9 @@ public class ModifyEventActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), R.string.empty_title_field_message, Toast.LENGTH_LONG).show();
                 else if (descriptionEditText.getText().toString().isEmpty())
                     Toast.makeText(getApplicationContext(), R.string.empty_description_field_message, Toast.LENGTH_LONG).show();
-                else if (dateEditText.getText().toString().isEmpty())
+                else if (dateStartEditText.getText().toString().isEmpty())
+                    Toast.makeText(getApplicationContext(), R.string.empty_date_field_message, Toast.LENGTH_LONG).show();
+                else if (dateEndEditText.getText().toString().isEmpty())
                     Toast.makeText(getApplicationContext(), R.string.empty_date_field_message, Toast.LENGTH_LONG).show();
                 else if (startTimeEditText.getText().toString().isEmpty())
                     Toast.makeText(getApplicationContext(), R.string.empty_from_time_field_message, Toast.LENGTH_LONG).show();
@@ -274,7 +315,7 @@ public class ModifyEventActivity extends AppCompatActivity {
                 else if (eventDate.before(new Date()))
                     Toast.makeText(getApplicationContext(), R.string.invalid_date_field_message, Toast.LENGTH_LONG).show();
                 else if (eventStartTime.after(eventEndTime))
-                    Toast.makeText(getApplicationContext(), R.string.invalid_end_time_field_message, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.invalid_end_date_field_message, Toast.LENGTH_LONG).show();
                 else
                     confirmModifyEventAlertDialog();
                 break;
@@ -345,8 +386,10 @@ public class ModifyEventActivity extends AppCompatActivity {
     private void modifyEvent() {
         try {
             event.setTitle(titleEditText.getText().toString());
-            event.setStartDate(Event.DATETIME_SDF.parse(startTimeEditText.getText().toString()));
-            event.setEndDate(Event.DATETIME_SDF.parse(endTimeEditText.getText().toString()));
+            event.setStartDate(Event.DATETIME_SDF.parse(dateStartEditText.getText().toString() + " "
+                    + startTimeEditText.getText().toString()+":00"));
+            event.setEndDate(Event.DATETIME_SDF.parse(dateEndEditText.getText().toString() + " "
+                    + endTimeEditText.getText().toString()+":00"));
             event.setDescription(descriptionEditText.getText().toString());
 
             new EventsRegistryPutTask().execute("events", userLogged.getEmail(), userLogged.getPassword(), gson.toJson(event));
@@ -454,30 +497,44 @@ public class ModifyEventActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(String... params) {
             ClientResource cr = new ClientResource(Constants.BASE_URI + params[0]);
+
             cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, params[1], params[2]);
             String jsonResponse = null;
 
             boolean isEventModified = false;
 
             try {
-                jsonResponse = cr.put(params[3]).getText();
+                StringRepresentation sr = new StringRepresentation(params[3], MediaType.APPLICATION_JSON);
+                jsonResponse = cr.put(sr).getText();
 
-                if (cr.getStatus().getCode() == ErrorCodes.INVALID_EVENT_ID)
-                    throw gson.fromJson(jsonResponse, InvalidEventIdException.class);
+                if (cr.getStatus().getCode() == ErrorCodes.VOID_CLASS_FIELD)
+                    throw gson.fromJson(jsonResponse, VoidClassFieldException.class);
+                else if (cr.getStatus().getCode() == ErrorCodes.JSON_PARSING)
+                    throw gson.fromJson(jsonResponse, JsonParsingException.class);
                 else if (cr.getStatus().getCode() == ErrorCodes.UNAUTHORIZED_USER)
                     throw gson.fromJson(jsonResponse, UnauthorizedUserException.class);
+                else if (cr.getStatus().getCode() == ErrorCodes.GENERIC_SQL)
+                    throw gson.fromJson(jsonResponse, GenericSQLException.class);
 
                 isEventModified = gson.fromJson(jsonResponse, boolean.class);
-            } catch (ResourceException | IOException e1) {
+            } catch (ResourceException | IOException  e1) {
                 String text = "Error: " + cr.getStatus().getCode() + " - " + cr.getStatus().getDescription() + " - " + cr.getStatus().getReasonPhrase();
                 Log.e(Constants.TAG, text);
                 toastMessage = text;
-            } catch (InvalidEventIdException e2) {
+            } catch (VoidClassFieldException e2) {
                 String text = "Error: " + cr.getStatus().getCode() + " - " + e2.getMessage();
                 Log.e(Constants.TAG, text);
                 toastMessage = text;
             } catch (UnauthorizedUserException e3) {
                 String text = "Error: " + cr.getStatus().getCode() + " - " + e3.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (GenericSQLException e4) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e4.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (JsonParsingException e5) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e5.getMessage();
                 Log.e(Constants.TAG, text);
                 toastMessage = text;
             }

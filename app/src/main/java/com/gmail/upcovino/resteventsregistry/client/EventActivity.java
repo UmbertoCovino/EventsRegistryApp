@@ -7,18 +7,15 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.content.FileProvider;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,20 +26,23 @@ import android.widget.Toast;
 
 import com.gmail.upcovino.resteventsregistry.BuildConfig;
 import com.gmail.upcovino.resteventsregistry.R;
-import com.gmail.upcovino.resteventsregistry.commons.ErrorCodes;
 import com.gmail.upcovino.resteventsregistry.commons.Event;
-import com.gmail.upcovino.resteventsregistry.commons.InvalidEventIdException;
-import com.gmail.upcovino.resteventsregistry.commons.UnauthorizedUserException;
 import com.gmail.upcovino.resteventsregistry.commons.User;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.ErrorCodes;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.InvalidEventIdException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.UnauthorizedUserException;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.MediaType;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
+import java.util.Date;
 
 public class EventActivity extends AppCompatActivity {
     private Gson gson;
@@ -75,7 +75,10 @@ public class EventActivity extends AppCompatActivity {
             }
         });
 
-        gson = new Gson();
+        //gson = new Gson();
+        gson = new GsonBuilder()
+                .registerTypeAdapter(Date.class, new Constants.DateTypeAdapter())
+                .create();
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String userJson = preferences.getString(Constants.USER, null);
@@ -231,7 +234,8 @@ public class EventActivity extends AppCompatActivity {
             boolean isSubscribed = false;
 
             try {
-                jsonResponse = cr.post(params[1]).getText();
+                StringRepresentation sr = new StringRepresentation(params[1], MediaType.APPLICATION_JSON);
+                jsonResponse = cr.post(sr).getText();
 
                 if (cr.getStatus().getCode() == ErrorCodes.INVALID_EVENT_ID)
                     throw gson.fromJson(jsonResponse, InvalidEventIdException.class);

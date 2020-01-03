@@ -22,24 +22,22 @@ import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.gmail.upcovino.resteventsregistry.BuildConfig;
 import com.gmail.upcovino.resteventsregistry.R;
-import com.gmail.upcovino.resteventsregistry.commons.ErrorCodes;
-import com.gmail.upcovino.resteventsregistry.commons.Event;
-import com.gmail.upcovino.resteventsregistry.commons.InvalidEventIdException;
-import com.gmail.upcovino.resteventsregistry.commons.InvalidUserEmailException;
-import com.gmail.upcovino.resteventsregistry.commons.UnauthorizedUserException;
 import com.gmail.upcovino.resteventsregistry.commons.User;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.ErrorCodes;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.InvalidUserEmailException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.UnauthorizedUserException;
 import com.google.gson.Gson;
 
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.representation.FileRepresentation;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
@@ -380,7 +378,8 @@ public class RegistrationActivity extends AppCompatActivity {
             boolean isUserAdded = false;
 
             try {
-                jsonResponse = cr.post(params[1]).getText();
+                StringRepresentation sr = new StringRepresentation(params[1], MediaType.APPLICATION_JSON);
+                jsonResponse = cr.post(sr).getText();
 
                 if (cr.getStatus().getCode() == ErrorCodes.INVALID_USER_EMAIL)
                     throw gson.fromJson(jsonResponse, InvalidUserEmailException.class);

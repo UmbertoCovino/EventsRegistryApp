@@ -102,6 +102,7 @@
     <string name="alert_dialog_message_permission_not_granted">Sei sicuro di non voler concedere il permesso? Senza di esso alcune funzionalità dell\'app potrebbero non funzionare correttamente.</string>
     <string name="invalid_from_date_field_message">La data iniziale non può essere successiva alla data finale.</string>
     <string name="invalid_end_time_field_message">L\'ora di fine non può essere precedente all\'ora di inizio.</string>
+    <string name="invalid_end_date_field_message">La data di fine non può essere precedente alla data di inizio.</string>
     <string name="pick_image_intent">Apri con</string>
 
 

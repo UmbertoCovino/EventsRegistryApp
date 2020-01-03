@@ -4,11 +4,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.media.MediaScannerConnection;
@@ -19,7 +17,6 @@ import android.os.Environment;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
@@ -28,7 +25,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -38,16 +34,18 @@ import android.widget.Toast;
 
 import com.gmail.upcovino.resteventsregistry.BuildConfig;
 import com.gmail.upcovino.resteventsregistry.R;
-import com.gmail.upcovino.resteventsregistry.commons.ErrorCodes;
 import com.gmail.upcovino.resteventsregistry.commons.Event;
-import com.gmail.upcovino.resteventsregistry.commons.InvalidEventIdException;
-import com.gmail.upcovino.resteventsregistry.commons.UnauthorizedUserException;
 import com.gmail.upcovino.resteventsregistry.commons.User;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.ErrorCodes;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.InvalidEventIdException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.UnauthorizedUserException;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.MediaType;
 import org.restlet.representation.FileRepresentation;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
 
@@ -68,7 +66,8 @@ public class AddEventActivity extends AppCompatActivity {
 
     private EditText titleEditText;
     private EditText descriptionEditText;
-    private EditText dateEditText;
+    private EditText dateStartEditText;
+    private EditText dateEndEditText;
     private EditText startTimeEditText;
     private EditText endTimeEditText;
     private ImageView eventImageView;
@@ -90,7 +89,10 @@ public class AddEventActivity extends AppCompatActivity {
         });
 
 
-        gson = new Gson();
+        //gson = new Gson();
+        gson = new GsonBuilder()
+                .registerTypeAdapter(Date.class, new Constants.DateTypeAdapter())
+                .create();
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String userJson = preferences.getString(Constants.USER, null);
@@ -99,12 +101,13 @@ public class AddEventActivity extends AppCompatActivity {
 
         titleEditText = (EditText) findViewById(R.id.ade_titleEditText);
         descriptionEditText = (EditText) findViewById(R.id.ade_descriptionEditText);
-        dateEditText = (EditText) findViewById(R.id.ade_dateEditText);
+        dateStartEditText = (EditText) findViewById(R.id.ade_dateStartEditText);
+        dateEndEditText = (EditText) findViewById(R.id.ade_dateEndEditText);
         startTimeEditText = (EditText) findViewById(R.id.ade_startTimeEditText);
         endTimeEditText = (EditText) findViewById(R.id.ade_endTimeEditText);
         eventImageView = (ImageView) findViewById(R.id.ade_eventImageView);
 
-        dateEditText.setOnClickListener(new View.OnClickListener() {
+        dateStartEditText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Date todayDate = new Date();
@@ -112,23 +115,50 @@ public class AddEventActivity extends AppCompatActivity {
                 int month = Integer.parseInt(new SimpleDateFormat("MM").format(todayDate)) - 1;
                 int year = Integer.parseInt(new SimpleDateFormat("yyyy").format(todayDate));
 
-                if (dateEditText.getText().length() != 0) {
-                    StringTokenizer st = new StringTokenizer(dateEditText.getText().toString(), ".");
-                    dayOfMonth = Integer.parseInt(st.nextToken());
-                    month      = Integer.parseInt(st.nextToken()) - 1;
+                if (dateStartEditText.getText().length() != 0) {
+                    StringTokenizer st = new StringTokenizer(dateStartEditText.getText().toString(), "-");
                     year       = Integer.parseInt(st.nextToken());
+                    month      = Integer.parseInt(st.nextToken());
+                    dayOfMonth = Integer.parseInt(st.nextToken()) - 1;
                 }
 
                 DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(), new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        dateEditText.setText(String.format("%02d.%02d.%04d", dayOfMonth, month + 1, year));
+                        dateStartEditText.setText(String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth));
                     }
                 }, year, month, dayOfMonth);
 
                 datePickerDialog.show();
             }
         });
+
+        dateEndEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Date todayDate = new Date();
+                int dayOfMonth = Integer.parseInt(new SimpleDateFormat("dd").format(todayDate));
+                int month = Integer.parseInt(new SimpleDateFormat("MM").format(todayDate)) - 1;
+                int year = Integer.parseInt(new SimpleDateFormat("yyyy").format(todayDate));
+
+                if (dateEndEditText.getText().length() != 0) {
+                    StringTokenizer st = new StringTokenizer(dateStartEditText.getText().toString(), "-");
+                    year       = Integer.parseInt(st.nextToken());
+                    month      = Integer.parseInt(st.nextToken());
+                    dayOfMonth = Integer.parseInt(st.nextToken()) - 1;
+                }
+
+                DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(), new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                        dateEndEditText.setText(String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth));
+                    }
+                }, year, month, dayOfMonth);
+
+                datePickerDialog.show();
+            }
+        });
+
 
         startTimeEditText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -216,20 +246,21 @@ public class AddEventActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_done:
-                Date eventDate = null,
-                     eventStartTime = null,
+                Date eventDate = null, eventStartTime = null,
                      eventEndTime = null;
                 try {
                     Calendar date = Calendar.getInstance();
-                    date.setTime(Event.DATETIME_SDF.parse(dateEditText.getText().toString()));
+                    date.setTime(Event.DATE_SDF.parse(dateStartEditText.getText().toString()));
                     Calendar startTime = Calendar.getInstance();
-                    startTime.setTime(Event.DATETIME_SDF.parse(startTimeEditText.getText().toString()));
+                    startTime.setTime(Event.TIME_SDF.parse(startTimeEditText.getText().toString()));
                     date.set(Calendar.HOUR_OF_DAY, startTime.get(Calendar.HOUR_OF_DAY));
                     date.set(Calendar.MINUTE, startTime.get(Calendar.MINUTE));
                     eventDate = date.getTime();
 
-                    eventStartTime = Event.DATETIME_SDF.parse(startTimeEditText.getText().toString());
-                    eventEndTime = Event.DATETIME_SDF.parse(endTimeEditText.getText().toString());
+                    eventStartTime = Event.DATETIME_SDF.parse(dateStartEditText.getText().toString() + " " +
+                            startTimeEditText.getText().toString() + ":00");
+                    eventEndTime = Event.DATETIME_SDF.parse(dateEndEditText.getText().toString() + " " +
+                            endTimeEditText.getText().toString()+":00");
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -238,7 +269,9 @@ public class AddEventActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), R.string.empty_title_field_message, Toast.LENGTH_LONG).show();
                 else if (descriptionEditText.getText().toString().isEmpty())
                     Toast.makeText(getApplicationContext(), R.string.empty_description_field_message, Toast.LENGTH_LONG).show();
-                else if (dateEditText.getText().toString().isEmpty())
+                else if (dateStartEditText.getText().toString().isEmpty())
+                    Toast.makeText(getApplicationContext(), R.string.empty_date_field_message, Toast.LENGTH_LONG).show();
+                else if (dateEndEditText.getText().toString().isEmpty())
                     Toast.makeText(getApplicationContext(), R.string.empty_date_field_message, Toast.LENGTH_LONG).show();
                 else if (startTimeEditText.getText().toString().isEmpty())
                     Toast.makeText(getApplicationContext(), R.string.empty_from_time_field_message, Toast.LENGTH_LONG).show();
@@ -247,7 +280,7 @@ public class AddEventActivity extends AppCompatActivity {
                 else if (eventDate.before(new Date()))
                     Toast.makeText(getApplicationContext(), R.string.invalid_date_field_message, Toast.LENGTH_LONG).show();
                 else if (eventStartTime.after(eventEndTime))
-                    Toast.makeText(getApplicationContext(), R.string.invalid_end_time_field_message, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), R.string.invalid_end_date_field_message, Toast.LENGTH_LONG).show();
                 else
                     confirmAddEventAlertDialog();
                 break;
@@ -318,8 +351,10 @@ public class AddEventActivity extends AppCompatActivity {
     private void addEvent() {
         try {
             Event event = new Event(titleEditText.getText().toString(),
-                    Event.DATETIME_SDF.parse(startTimeEditText.getText().toString()),
-                    Event.DATETIME_SDF.parse(endTimeEditText.getText().toString()), descriptionEditText.getText().toString());
+                    Event.DATETIME_SDF.parse(dateStartEditText.getText().toString() + " "
+                            + startTimeEditText.getText().toString()+":00"),
+                    Event.DATETIME_SDF.parse(dateEndEditText.getText().toString() + " "
+                            + endTimeEditText.getText().toString()+":00"), descriptionEditText.getText().toString());
             new EventsRegistryPostTask().execute("events", userLogged.getEmail(), userLogged.getPassword(), gson.toJson(event));
         } catch (ParseException e) {
             e.printStackTrace();
@@ -409,10 +444,6 @@ public class AddEventActivity extends AppCompatActivity {
         }
     }
 
-
-
-
-
     public class EventsRegistryPostTask extends AsyncTask<String, Void, String> {
 
         @Override
@@ -424,7 +455,8 @@ public class AddEventActivity extends AppCompatActivity {
             String eventAddedId = null;
 
             try {
-                jsonResponse = cr.post(params[3]).getText();
+                StringRepresentation sr = new StringRepresentation(params[3], MediaType.APPLICATION_JSON);
+                jsonResponse = cr.post(sr).getText();
 
                 if (cr.getStatus().getCode() == ErrorCodes.INVALID_EVENT_ID)
                     throw gson.fromJson(jsonResponse, InvalidEventIdException.class);

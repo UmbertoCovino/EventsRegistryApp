@@ -6,7 +6,7 @@ import java.util.Date;
 
 public class Event implements Serializable {
 	private static final long serialVersionUID = -9209880685041545499L;
-	public static final SimpleDateFormat DATE_SDF = new SimpleDateFormat("dd.MM.yyyy");
+	public static final SimpleDateFormat DATE_SDF = new SimpleDateFormat("yyyy-MM-dd");
 	public static final SimpleDateFormat TIME_SDF = new SimpleDateFormat("HH:mm");
 	public static final SimpleDateFormat DATETIME_SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -136,5 +136,11 @@ public class Event implements Serializable {
 	@Override
 	public String toString() {
 		return "Event [id=" + id + ", title=" + title + ", startDate=" + getFormattedStartDate() + ", endDate=" + getFormattedEndDate() + ", description=" + description + ", photoPath=" + photoPath + ", owner=" + owner + "]";
+	}
+
+	public Event clone() {
+		Event event = new Event(title, startDate, endDate, description);
+
+		return event;
 	}
 }

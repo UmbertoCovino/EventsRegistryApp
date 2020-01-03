@@ -51,9 +51,7 @@
         android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            xmlns:tools="http://schemas.android.com/tools"
+        <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -62,9 +60,9 @@
                 android:id="@+id/ade_titleEditText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
                 android:ems="10"
                 android:hint="@string/title"
                 android:inputType="text"
@@ -76,8 +74,8 @@
                 android:id="@+id/ade_descriptionEditText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:ems="10"
                 android:gravity="top|start"
                 android:hint="@string/description"
@@ -91,11 +89,11 @@
                 app:layout_constraintTop_toBottomOf="@+id/ade_titleEditText" />
 
             <EditText
-                android:id="@+id/ade_dateEditText"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
+                android:id="@+id/ade_dateStartEditText"
+                android:layout_width="190dp"
+                android:layout_height="53dp"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:ems="10"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
@@ -103,6 +101,24 @@
                 android:inputType="date"
                 android:longClickable="false"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/ade_descriptionEditText" />
+
+            <EditText
+                android:id="@+id/ade_dateEndEditText"
+                android:layout_width="190dp"
+                android:layout_height="53dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:ems="10"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:hint="@string/when"
+                android:inputType="date"
+                android:longClickable="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/ade_descriptionEditText" />
 
@@ -110,9 +126,9 @@
                 android:id="@+id/ade_startTimeEditText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="64dp"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="64dp"
                 android:ems="10"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
@@ -121,16 +137,16 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/ade_endTimeEditText"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/ade_dateEditText"
+                app:layout_constraintTop_toBottomOf="@+id/ade_dateStartEditText"
                 app:layout_constraintVertical_bias="0.0" />
 
             <EditText
                 android:id="@+id/ade_endTimeEditText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="64dp"
-                android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="64dp"
                 android:ems="10"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
@@ -141,7 +157,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.963"
                 app:layout_constraintStart_toEndOf="@+id/ade_startTimeEditText"
-                app:layout_constraintTop_toBottomOf="@+id/ade_dateEditText"
+                app:layout_constraintTop_toBottomOf="@+id/ade_dateStartEditText"
                 app:layout_constraintVertical_bias="0.0" />
 
         </android.support.constraint.ConstraintLayout>

@@ -11,7 +11,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaScannerConnection;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -49,12 +48,13 @@ import android.widget.Toast;
 
 import com.gmail.upcovino.resteventsregistry.BuildConfig;
 import com.gmail.upcovino.resteventsregistry.R;
-import com.gmail.upcovino.resteventsregistry.commons.ErrorCodes;
 import com.gmail.upcovino.resteventsregistry.commons.Event;
-import com.gmail.upcovino.resteventsregistry.commons.InvalidEventIdException;
-import com.gmail.upcovino.resteventsregistry.commons.UnauthorizedUserException;
 import com.gmail.upcovino.resteventsregistry.commons.User;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.ErrorCodes;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.InvalidEventIdException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.UnauthorizedUserException;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.restlet.data.ChallengeScheme;
 import org.restlet.representation.Representation;
@@ -65,7 +65,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -74,7 +73,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.StringTokenizer;
-import java.util.concurrent.ExecutionException;
 
 public class EventsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private Gson gson;
@@ -118,7 +116,10 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
         navigationView = (NavigationView) findViewById(R.id.ae_navigationView);
         navigationView.setNavigationItemSelectedListener(this);
 
-        gson = new Gson();
+        //gson = new Gson();
+        gson = new GsonBuilder()
+                .registerTypeAdapter(Date.class, new Constants.DateTypeAdapter())
+                .create();
         storageDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath() + "/eventsRegistry"); //getExternalCacheDir();
         if (!storageDirectory.exists())
             storageDirectory.mkdir();
@@ -728,10 +729,6 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
             refreshEventsCallback(gson.fromJson(savedInstanceState.getString(Constants.EVENTS_ARRAY), Event[].class));
         }
     }
-
-
-
-
 
     public class EventsAdapter extends ArrayAdapter<Event> {
         private Context context;
