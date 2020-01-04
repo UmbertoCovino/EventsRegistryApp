@@ -25,7 +25,10 @@ import android.widget.Toast;
 import com.gmail.upcovino.resteventsregistry.R;
 import com.gmail.upcovino.resteventsregistry.commons.User;
 import com.gmail.upcovino.resteventsregistry.commons.exceptions.ErrorCodes;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.GenericSQLException;
 import com.gmail.upcovino.resteventsregistry.commons.exceptions.InvalidUserEmailException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.JsonParsingException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.VoidClassFieldException;
 import com.google.gson.Gson;
 
 import org.restlet.data.MediaType;
@@ -183,10 +186,6 @@ public class LoginActivity extends AppCompatActivity {
             finish();
     }
 
-
-
-
-
     public class UserPostTask extends AsyncTask<String, Void, User> {
 
         @Override
@@ -203,6 +202,12 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (cr.getStatus().getCode() == ErrorCodes.INVALID_USER_EMAIL)
                     throw gson.fromJson(jsonResponse, InvalidUserEmailException.class);
+                else if (cr.getStatus().getCode() == ErrorCodes.JSON_PARSING)
+                    throw gson.fromJson(jsonResponse, JsonParsingException.class);
+                else if (cr.getStatus().getCode() == ErrorCodes.GENERIC_SQL)
+                    throw gson.fromJson(jsonResponse, GenericSQLException.class);
+                else if (cr.getStatus().getCode() == ErrorCodes.VOID_CLASS_FIELD)
+                    throw gson.fromJson(jsonResponse, VoidClassFieldException.class);
 
                 user = gson.fromJson(jsonResponse, User.class);
 
@@ -216,6 +221,18 @@ public class LoginActivity extends AppCompatActivity {
                 String text = "Error: " + cr.getStatus().getCode() + " - " + e2.getMessage();
                 Log.e(Constants.TAG, text);
                 toastMessage = getResources().getString(R.string.incorrect_email_message);
+            } catch (VoidClassFieldException e2) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e2.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (GenericSQLException e2) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e2.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (JsonParsingException e2) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e2.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
             }
 
             return user;

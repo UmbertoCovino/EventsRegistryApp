@@ -29,8 +29,12 @@ import com.gmail.upcovino.resteventsregistry.R;
 import com.gmail.upcovino.resteventsregistry.commons.Event;
 import com.gmail.upcovino.resteventsregistry.commons.User;
 import com.gmail.upcovino.resteventsregistry.commons.exceptions.ErrorCodes;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.GenericSQLException;
 import com.gmail.upcovino.resteventsregistry.commons.exceptions.InvalidEventIdException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.InvalidUserEmailException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.JsonParsingException;
 import com.gmail.upcovino.resteventsregistry.commons.exceptions.UnauthorizedUserException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.VoidClassFieldException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -239,8 +243,14 @@ public class EventActivity extends AppCompatActivity {
 
                 if (cr.getStatus().getCode() == ErrorCodes.INVALID_EVENT_ID)
                     throw gson.fromJson(jsonResponse, InvalidEventIdException.class);
+                if (cr.getStatus().getCode() == ErrorCodes.INVALID_USER_EMAIL)
+                    throw gson.fromJson(jsonResponse, InvalidUserEmailException.class);
                 else if (cr.getStatus().getCode() == ErrorCodes.UNAUTHORIZED_USER)
                     throw gson.fromJson(jsonResponse, UnauthorizedUserException.class);
+                else if (cr.getStatus().getCode() == ErrorCodes.VOID_CLASS_FIELD)
+                    throw gson.fromJson(jsonResponse, VoidClassFieldException.class);
+                else if (cr.getStatus().getCode() == ErrorCodes.GENERIC_SQL)
+                    throw gson.fromJson(jsonResponse, GenericSQLException.class);
 
                 isSubscribed = gson.fromJson(jsonResponse, boolean.class);
             } catch (ResourceException | IOException e1) {
@@ -255,6 +265,18 @@ public class EventActivity extends AppCompatActivity {
                 String text = "Error: " + cr.getStatus().getCode() + " - " + e3.getMessage();
                 Log.e(Constants.TAG, text);
                 toastMessage = text;
+            } catch (InvalidUserEmailException e2) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e2.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (VoidClassFieldException e2) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e2.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (GenericSQLException e4) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e4.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
             }
 
             return isSubscribed;
@@ -265,8 +287,6 @@ public class EventActivity extends AppCompatActivity {
             ((Button) findViewById(R.id.aev_subscribe_button)).setClickable(false);
         }
     }
-
-
 
     public class EventDeleteTask extends AsyncTask<String, Void, Boolean> {
 
@@ -286,6 +306,8 @@ public class EventActivity extends AppCompatActivity {
                     throw gson.fromJson(jsonResponse, InvalidEventIdException.class);
                 else if (cr.getStatus().getCode() == ErrorCodes.UNAUTHORIZED_USER)
                     throw gson.fromJson(jsonResponse, UnauthorizedUserException.class);
+                else if (cr.getStatus().getCode() == ErrorCodes.GENERIC_SQL)
+                    throw gson.fromJson(jsonResponse, GenericSQLException.class);
 
                 isEventRemoved = gson.fromJson(jsonResponse, boolean.class);
             } catch (ResourceException | IOException e1) {
@@ -298,6 +320,10 @@ public class EventActivity extends AppCompatActivity {
                 toastMessage = text;
             } catch (UnauthorizedUserException e3) {
                 String text = "Error: " + cr.getStatus().getCode() + " - " + e3.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (GenericSQLException e4) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e4.getMessage();
                 Log.e(Constants.TAG, text);
                 toastMessage = text;
             }

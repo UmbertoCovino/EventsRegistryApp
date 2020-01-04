@@ -567,6 +567,8 @@ public class ModifyEventActivity extends AppCompatActivity {
                     throw gson.fromJson(jsonResponse, InvalidEventIdException.class);
                 else if (cr.getStatus().getCode() == ErrorCodes.UNAUTHORIZED_USER)
                     throw gson.fromJson(jsonResponse, UnauthorizedUserException.class);
+                else if (cr.getStatus().getCode() == ErrorCodes.GENERIC_SQL)
+                    throw gson.fromJson(jsonResponse, GenericSQLException.class);
 
                 isEventPhotoUploaded = gson.fromJson(jsonResponse, boolean.class);
             } catch (ResourceException | IOException e1) {
@@ -584,6 +586,10 @@ public class ModifyEventActivity extends AppCompatActivity {
                 Log.e(Constants.TAG, text);
                 toastMessage = text;
             } catch (UnauthorizedUserException e2) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e2.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (GenericSQLException e2) {
                 String text = "Error: " + cr.getStatus().getCode() + " - " + e2.getMessage();
                 Log.e(Constants.TAG, text);
                 toastMessage = text;

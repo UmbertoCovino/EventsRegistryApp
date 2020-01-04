@@ -51,8 +51,10 @@ import com.gmail.upcovino.resteventsregistry.R;
 import com.gmail.upcovino.resteventsregistry.commons.Event;
 import com.gmail.upcovino.resteventsregistry.commons.User;
 import com.gmail.upcovino.resteventsregistry.commons.exceptions.ErrorCodes;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.GenericSQLException;
 import com.gmail.upcovino.resteventsregistry.commons.exceptions.InvalidEventIdException;
 import com.gmail.upcovino.resteventsregistry.commons.exceptions.UnauthorizedUserException;
+import com.gmail.upcovino.resteventsregistry.commons.exceptions.VoidClassFieldException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -846,6 +848,8 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
 
                 if (cr.getStatus().getCode() == ErrorCodes.INVALID_EVENT_ID)
                     throw gson.fromJson(jsonResponse, InvalidEventIdException.class);
+                else if (cr.getStatus().getCode() == ErrorCodes.GENERIC_SQL)
+                    throw gson.fromJson(jsonResponse, GenericSQLException.class);
 
                 events = gson.fromJson(jsonResponse, Event[].class);
             } catch (ResourceException | IOException e1) {
@@ -854,6 +858,10 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                 toastMessage = text;
             } catch (InvalidEventIdException e2) {
                 String text = "Error: " + cr.getStatus().getCode() + " - " + e2.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (GenericSQLException e3) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e3.getMessage();
                 Log.e(Constants.TAG, text);
                 toastMessage = text;
             }
@@ -884,6 +892,8 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                     throw gson.fromJson(jsonResponse, InvalidEventIdException.class);
                 else if (cr.getStatus().getCode() == ErrorCodes.UNAUTHORIZED_USER)
                     throw gson.fromJson(jsonResponse, UnauthorizedUserException.class);
+                else if (cr.getStatus().getCode() == ErrorCodes.GENERIC_SQL)
+                    throw gson.fromJson(jsonResponse, GenericSQLException.class);
 
                 isEventRemoved = gson.fromJson(jsonResponse, boolean.class);
             } catch (ResourceException | IOException e1) {
@@ -896,6 +906,10 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                 toastMessage = text;
             } catch (UnauthorizedUserException e3) {
                 String text = "Error: " + cr.getStatus().getCode() + " - " + e3.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (GenericSQLException e4) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e4.getMessage();
                 Log.e(Constants.TAG, text);
                 toastMessage = text;
             }
@@ -933,6 +947,10 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
 
                 if (cr.getStatus().getCode() == 204 /* No Content */)
                     eventPhotoBitmap = null;
+                if (cr.getStatus().getCode() == ErrorCodes.INVALID_EVENT_ID)
+                    throw new InvalidEventIdException("EventPhotoGetTask InvalidEventException");
+                else if (cr.getStatus().getCode() == ErrorCodes.GENERIC_SQL)
+                    throw new GenericSQLException("EventPhotoGetTask GenericSQLException");
                 else {
                     eventPhoto.write(new FileOutputStream(eventPhotoFile));
                     eventPhotoBitmap = BitmapFactory.decodeFile(eventPhotoFile.getAbsolutePath());
@@ -945,6 +963,14 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (GenericSQLException e2) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e2.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (InvalidEventIdException e3) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + e3.getMessage();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
             }
 
             return eventPhotoBitmap;
@@ -980,11 +1006,29 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
 
                 if (cr.getStatus().getCode() == 204 /* No Content */)
                     userPhotoBitmap = null;
+                if (cr.getStatus().getCode() == ErrorCodes.INVALID_EVENT_ID)
+                    throw new InvalidEventIdException("EventPhotoGetTask InvalidEventException");
+                else if (cr.getStatus().getCode() == ErrorCodes.GENERIC_SQL)
+                    throw new GenericSQLException("EventPhotoGetTask GenericSQLException");
+                else if (cr.getStatus().getCode() == ErrorCodes.VOID_CLASS_FIELD)
+                    throw new VoidClassFieldException("EventPhotoGetTask VoidClassFieldException");
                 else {
                     userPhoto.write(new FileOutputStream(userPhotoFile));
                     userPhotoBitmap = BitmapFactory.decodeFile(userPhotoFile.getAbsolutePath());
                 }
             } catch (ResourceException e1) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + cr.getStatus().getDescription() + " - " + cr.getStatus().getReasonPhrase();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (GenericSQLException e1) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + cr.getStatus().getDescription() + " - " + cr.getStatus().getReasonPhrase();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (VoidClassFieldException e1) {
+                String text = "Error: " + cr.getStatus().getCode() + " - " + cr.getStatus().getDescription() + " - " + cr.getStatus().getReasonPhrase();
+                Log.e(Constants.TAG, text);
+                toastMessage = text;
+            } catch (InvalidEventIdException e1) {
                 String text = "Error: " + cr.getStatus().getCode() + " - " + cr.getStatus().getDescription() + " - " + cr.getStatus().getReasonPhrase();
                 Log.e(Constants.TAG, text);
                 toastMessage = text;
