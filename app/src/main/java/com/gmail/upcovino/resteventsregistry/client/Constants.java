@@ -19,7 +19,7 @@ import java.util.Date;
 
 public class Constants {
     public static final int IMAGE_PICKER = 1;
-    public static final String BASE_URI = "http://192.168.1.8:8183/eventsRegistry/",
+    public static final String BASE_URI = "http://10.0.0.2:8182/eventsRegistry/",
                                TAG = "EventsRegistry",
                                USER = "user",
                                EVENT = "event",

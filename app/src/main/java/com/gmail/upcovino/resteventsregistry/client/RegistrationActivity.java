@@ -239,7 +239,7 @@ public class RegistrationActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
-                        new TelegramTokenGetTask().execute(user.getEmail());
+                        new TelegramTokenGetTask().execute(user.getEmail(), user.getPassword());
 
                         finish();
                     }
@@ -336,6 +336,8 @@ public class RegistrationActivity extends AppCompatActivity {
         @Override
         protected Integer doInBackground(String... params) {
             ClientResource cr = new ClientResource(Constants.BASE_URI + "users/" + params[0] + "/telegram");
+            cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, params[0], params[1]);
+
             String jsonResponse = null;
 
             Integer token = null;
