@@ -2,7 +2,7 @@ language: android
 
 before_install:
   - chmod +x gradlew
-  - yes | sdkmanager --licenses
+  - echo yes | sdkmanager "build-tools;27.0.1"
 
 jdk: oraclejdk8
 android:
