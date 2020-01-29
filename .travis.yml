@@ -36,7 +36,8 @@ env:
   global:
    # install timeout in minutes (2 minutes by default)
     - ADB_INSTALL_TIMEOUT=8
-  
+script:
+  - ./gradlew connectedCheck
 notifications:
   email:
     - angelocaporaso03@gmail.com
