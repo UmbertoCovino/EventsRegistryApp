@@ -3,7 +3,7 @@ jdk: oraclejdk8
 sudo: false
 before_install:
   - chmod +x gradlew
-  - echo yes | sdkmanager "build-tools;24.0.2"
+  - echo yes | sdkmanager "build-tools;27.0.1"
 android:
   components:
     - tools
