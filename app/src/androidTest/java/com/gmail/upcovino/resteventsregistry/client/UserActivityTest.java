@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.ViewInteraction;
-import android.support.test.espresso.contrib.PickerActions;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.rule.GrantPermissionRule;
@@ -14,28 +13,20 @@ import android.support.test.runner.AndroidJUnit4;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.widget.DatePicker;
 
 import com.gmail.upcovino.resteventsregistry.R;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
-import org.junit.After;
+import org.hamcrest.core.IsInstanceOf;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.restlet.data.ChallengeScheme;
-import org.restlet.resource.ClientResource;
-
-import java.io.IOException;
 
 import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static android.support.test.espresso.action.ViewActions.replaceText;
@@ -51,12 +42,7 @@ import static org.hamcrest.Matchers.is;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class AddEventActivityTest {
-
-    private String title = "TITLE_ETEST";
-    private String description = "DESCRIPTION_ETEST";
-    private String email = "a@gmail.com";
-    private String password = "p";
+public class UserActivityTest {
 
     @Rule
     public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
@@ -79,16 +65,8 @@ public class AddEventActivityTest {
         editor.commit();
     }
 
-    @After
-    @Before
-    public void deleteEvent() throws IOException {
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
-        String jsonResponse = cr.delete().getText();
-    }
-
     @Test
-    public void addEventActivityTest() {
+    public void userActivityTest() {
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.al_emailEditText),
                         childAtPosition(
@@ -125,81 +103,106 @@ public class AddEventActivityTest {
                                 2)));
         appCompatButton.perform(scrollTo(), click());
 
-        ViewInteraction floatingActionButton = onView(
-                allOf(withId(R.id.ae_floatingActionButton),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.ae_drawer_layout),
-                                        0),
-                                2),
-                        isDisplayed()));
-        floatingActionButton.perform(click());
-
-        ViewInteraction appCompatEditText4 = onView(
-                allOf(withId(R.id.ade_titleEditText),
-                        childAtPosition(
-                                childAtPosition(
-                                        withClassName(is("android.support.v4.widget.NestedScrollView")),
-                                        0),
-                                0),
-                        isDisplayed()));
-        appCompatEditText4.perform(replaceText(title), closeSoftKeyboard());
-
-        ViewInteraction appCompatEditText5 = onView(
-                allOf(withId(R.id.ade_descriptionEditText),
-                        childAtPosition(
-                                childAtPosition(
-                                        withClassName(is("android.support.v4.widget.NestedScrollView")),
-                                        0),
-                                1),
-                        isDisplayed()));
-        appCompatEditText5.perform(replaceText(description), closeSoftKeyboard());
-
-        ViewInteraction appCompatEditText6 = onView(
-                allOf(withId(R.id.ade_dateStartEditText),
-                        childAtPosition(
-                                childAtPosition(
-                                        withClassName(is("android.support.v4.widget.NestedScrollView")),
-                                        0),
-                                2),
-                        isDisplayed()));
-        appCompatEditText6.perform(click());
-
         ViewInteraction appCompatImageButton = onView(
-                allOf(withClassName(is("android.support.v7.widget.AppCompatImageButton")), withContentDescription("Next month"),
+                allOf(withContentDescription("Open navigation drawer"),
                         childAtPosition(
-                                allOf(withClassName(is("android.widget.DayPickerView")),
+                                allOf(withId(R.id.ae_toolbar),
                                         childAtPosition(
-                                                withClassName(is("com.android.internal.widget.DialogViewAnimator")),
+                                                withClassName(is("android.support.design.widget.AppBarLayout")),
                                                 0)),
-                                2),
+                                1),
                         isDisplayed()));
         appCompatImageButton.perform(click());
 
-        // to set Date in DayPicker
-        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 02, 10));
+        ViewInteraction navigationMenuItemView = onView(
+                allOf(childAtPosition(
+                        allOf(withId(R.id.design_navigation_view),
+                                childAtPosition(
+                                        withId(R.id.ae_navigationView),
+                                        0)),
+                        5),
+                        isDisplayed()));
+        navigationMenuItemView.perform(click());
 
-        ViewInteraction appCompatButton2 = onView(
-                allOf(withId(android.R.id.button1), withText("OK"),
+        ViewInteraction appCompatEditText4 = onView(
+                allOf(withId(R.id.al_emailEditText),
                         childAtPosition(
                                 childAtPosition(
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
-                                3)));
-        appCompatButton2.perform(scrollTo(), click());
+                                0)));
+        appCompatEditText4.perform(scrollTo(), click());
 
-        ViewInteraction appCompatEditText7 = onView(
-                allOf(withId(R.id.ade_startTimeEditText),
+        ViewInteraction appCompatEditText5 = onView(
+                allOf(withId(R.id.al_emailEditText),
                         childAtPosition(
                                 childAtPosition(
-                                        withClassName(is("android.support.v4.widget.NestedScrollView")),
+                                        withClassName(is("android.widget.ScrollView")),
                                         0),
-                                4),
+                                0)));
+        appCompatEditText5.perform(scrollTo(), replaceText("a@gmail.com"), closeSoftKeyboard());
+
+        ViewInteraction appCompatEditText6 = onView(
+                allOf(withId(R.id.al_passwordEditText),
+                        childAtPosition(
+                                childAtPosition(
+                                        withClassName(is("android.widget.ScrollView")),
+                                        0),
+                                1)));
+        appCompatEditText6.perform(scrollTo(), replaceText("p"), closeSoftKeyboard());
+
+        ViewInteraction appCompatButton2 = onView(
+                allOf(withId(R.id.al_loginButton), withText("Login"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withClassName(is("android.widget.ScrollView")),
+                                        0),
+                                2)));
+        appCompatButton2.perform(scrollTo(), click());
+
+        ViewInteraction appCompatImageButton2 = onView(
+                allOf(withContentDescription("Open navigation drawer"),
+                        childAtPosition(
+                                allOf(withId(R.id.ae_toolbar),
+                                        childAtPosition(
+                                                withClassName(is("android.support.design.widget.AppBarLayout")),
+                                                0)),
+                                1),
                         isDisplayed()));
-        appCompatEditText7.perform(click());
+        appCompatImageButton2.perform(click());
+
+        ViewInteraction navigationMenuItemView2 = onView(
+                allOf(childAtPosition(
+                        allOf(withId(R.id.design_navigation_view),
+                                childAtPosition(
+                                        withId(R.id.ae_navigationView),
+                                        0)),
+                        4),
+                        isDisplayed()));
+        navigationMenuItemView2.perform(click());
+
+        ViewInteraction actionMenuItemView = onView(
+                allOf(withId(R.id.aev_menu_edit), withContentDescription("Modify"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(R.id.au_toolbar),
+                                        3),
+                                0),
+                        isDisplayed()));
+        actionMenuItemView.perform(click());
+
+        ViewInteraction actionMenuItemView2 = onView(
+                allOf(withId(R.id.menu_done), withText("Done"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(R.id.ar_toolbar),
+                                        3),
+                                0),
+                        isDisplayed()));
+        actionMenuItemView2.perform(click());
 
         ViewInteraction appCompatButton3 = onView(
-                allOf(withId(android.R.id.button1), withText("OK"),
+                allOf(withId(android.R.id.button1), withText("Yes"),
                         childAtPosition(
                                 childAtPosition(
                                         withClassName(is("android.widget.ScrollView")),
@@ -207,32 +210,29 @@ public class AddEventActivityTest {
                                 3)));
         appCompatButton3.perform(scrollTo(), click());
 
-        ViewInteraction appCompatEditText8 = onView(
-                allOf(withId(R.id.ade_dateEndEditText),
+        ViewInteraction actionMenuItemView3 = onView(
+                allOf(withId(R.id.aev_menu_edit), withContentDescription("Modify"),
                         childAtPosition(
                                 childAtPosition(
-                                        withClassName(is("android.support.v4.widget.NestedScrollView")),
-                                        0),
-                                3),
+                                        withId(R.id.au_toolbar),
+                                        3),
+                                0),
                         isDisplayed()));
-        appCompatEditText8.perform(click());
+        actionMenuItemView3.perform(click());
 
-        ViewInteraction appCompatImageButton2 = onView(
-                allOf(withClassName(is("android.support.v7.widget.AppCompatImageButton")), withContentDescription("Next month"),
+        ViewInteraction appCompatImageButton3 = onView(
+                allOf(withContentDescription("Navigate up"),
                         childAtPosition(
-                                allOf(withClassName(is("android.widget.DayPickerView")),
+                                allOf(withId(R.id.ar_toolbar),
                                         childAtPosition(
-                                                withClassName(is("com.android.internal.widget.DialogViewAnimator")),
-                                                0)),
-                                2),
+                                                withId(R.id.ar_collapsingToolbarLayout),
+                                                1)),
+                                0),
                         isDisplayed()));
-        appCompatImageButton2.perform(click());
-
-        // to set Date in DayPicker
-        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 02, 11));
+        appCompatImageButton3.perform(click());
 
         ViewInteraction appCompatButton4 = onView(
-                allOf(withId(android.R.id.button1), withText("OK"),
+                allOf(withId(android.R.id.button1), withText("Yes"),
                         childAtPosition(
                                 childAtPosition(
                                         withClassName(is("android.widget.ScrollView")),
@@ -240,53 +240,9 @@ public class AddEventActivityTest {
                                 3)));
         appCompatButton4.perform(scrollTo(), click());
 
-        ViewInteraction appCompatEditText9 = onView(
-                allOf(withId(R.id.ade_endTimeEditText),
-                        childAtPosition(
-                                childAtPosition(
-                                        withClassName(is("android.support.v4.widget.NestedScrollView")),
-                                        0),
-                                5),
-                        isDisplayed()));
-        appCompatEditText9.perform(click());
-
-        ViewInteraction appCompatButton5 = onView(
-                allOf(withId(android.R.id.button1), withText("OK"),
-                        childAtPosition(
-                                childAtPosition(
-                                        withClassName(is("android.widget.ScrollView")),
-                                        0),
-                                3)));
-        appCompatButton5.perform(scrollTo(), click());
-
-        ViewInteraction actionMenuItemView = onView(
-                allOf(withId(R.id.menu_done), withText("Done"),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.ade_toolbar),
-                                        3),
-                                0),
-                        isDisplayed()));
-        actionMenuItemView.perform(click());
-
-        ViewInteraction appCompatButton6 = onView(
-                allOf(withId(android.R.id.button1), withText("Yes"),
-                        childAtPosition(
-                                childAtPosition(
-                                        withClassName(is("android.widget.ScrollView")),
-                                        0),
-                                3)));
-        appCompatButton6.perform(scrollTo(), click());
-
         ViewInteraction textView = onView(
-                allOf(withId(R.id.aeli_titleTextView), withText(title),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.ae_eventsListView),
-                                        0),
-                                0),
-                        isDisplayed()));
-        textView.check(matches(withText(title)));
+                allOf(withId(R.id.au_userEmailTextView), withText("a@gmail.com")));
+        textView.check(matches(withText("a@gmail.com")));
     }
 
     private static Matcher<View> childAtPosition(

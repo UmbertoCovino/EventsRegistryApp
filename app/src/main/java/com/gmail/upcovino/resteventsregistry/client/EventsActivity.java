@@ -369,21 +369,10 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                         Date fromDate = null;
                         Date toDate = null;
                         try {
-                            Calendar _fromDate = Calendar.getInstance();
-                            _fromDate.setTime(Event.DATETIME_SDF.parse(fromDateEditText.getText().toString()));
-                            Calendar fromTime = Calendar.getInstance();
-                            fromTime.setTime(Event.DATETIME_SDF.parse(fromTimeEditText.getText().toString()));
-                            _fromDate.set(Calendar.HOUR_OF_DAY, fromTime.get(Calendar.HOUR_OF_DAY));
-                            _fromDate.set(Calendar.MINUTE, fromTime.get(Calendar.MINUTE));
-                            fromDate = _fromDate.getTime();
-
-                            Calendar _toDate = Calendar.getInstance();
-                            _toDate.setTime(Event.DATETIME_SDF.parse(toDateEditText.getText().toString()));
-                            Calendar toTime = Calendar.getInstance();
-                            toTime.setTime(Event.DATETIME_SDF.parse(toTimeEditText.getText().toString()));
-                            _toDate.set(Calendar.HOUR_OF_DAY, toTime.get(Calendar.HOUR_OF_DAY));
-                            _toDate.set(Calendar.MINUTE, toTime.get(Calendar.MINUTE));
-                            toDate = _toDate.getTime();
+                            fromDate = Event.DATETIME_SDF.parse(fromDateEditText.getText().toString() + " " +
+                                    fromTimeEditText.getText().toString() + ":00");
+                            toDate = Event.DATETIME_SDF.parse(toDateEditText.getText().toString() + " " +
+                                    toTimeEditText.getText().toString()+":00");
                         } catch (ParseException e) {
                             e.printStackTrace();
                         }
@@ -435,16 +424,16 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                 int year = Integer.parseInt(new SimpleDateFormat("yyyy").format(todayDate));
 
                 if (fromDateEditText.getText().length() != 0) {
-                    StringTokenizer st = new StringTokenizer(fromDateEditText.getText().toString(), ".");
-                    dayOfMonth = Integer.parseInt(st.nextToken());
-                    month      = Integer.parseInt(st.nextToken()) - 1;
+                    StringTokenizer st = new StringTokenizer(fromDateEditText.getText().toString(), "-");
                     year       = Integer.parseInt(st.nextToken());
+                    month      = Integer.parseInt(st.nextToken());
+                    dayOfMonth = Integer.parseInt(st.nextToken()) - 1;
                 }
 
                 DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(), new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        fromDateEditText.setText(String.format("%02d.%02d.%04d", dayOfMonth, month + 1, year));
+                        fromDateEditText.setText(String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth));
                     }
                 }, year, month, dayOfMonth);
 
@@ -482,16 +471,16 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                 int year = Integer.parseInt(new SimpleDateFormat("yyyy").format(todayDate));
 
                 if (toDateEditText.getText().length() != 0) {
-                    StringTokenizer st = new StringTokenizer(toDateEditText.getText().toString(), ".");
-                    dayOfMonth = Integer.parseInt(st.nextToken());
-                    month      = Integer.parseInt(st.nextToken()) - 1;
+                    StringTokenizer st = new StringTokenizer(toDateEditText.getText().toString(), "-");
                     year       = Integer.parseInt(st.nextToken());
+                    month      = Integer.parseInt(st.nextToken());
+                    dayOfMonth = Integer.parseInt(st.nextToken()) - 1;
                 }
 
                 DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(), new DatePickerDialog.OnDateSetListener() {
                     @Override
                     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                        toDateEditText.setText(String.format("%02d.%02d.%04d", dayOfMonth, month + 1, year));
+                        toDateEditText.setText(String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth));
                     }
                 }, year, month, dayOfMonth);
 

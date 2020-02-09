@@ -121,10 +121,10 @@ public class ModifyEventActivity extends AppCompatActivity {
         descriptionEditText.setText(event.getDescription());
         String startDateString = Event.DATETIME_SDF.format(event.getStartDate());
         String endDateString = Event.DATETIME_SDF.format(event.getEndDate());
-        startTimeEditText.setText(startDateString.substring(10));
-        endTimeEditText.setText(endDateString.substring(10));
-        dateStartEditText.setText(startDateString.substring(0, 9));
-        dateEndEditText.setText(endDateString.substring(0, 9));
+        startTimeEditText.setText(startDateString.substring(11));
+        endTimeEditText.setText(endDateString.substring(11));
+        dateStartEditText.setText(startDateString.substring(0, 10));
+        dateEndEditText.setText(endDateString.substring(0, 10));
 
         if (event.getPhotoPath() != null) {
             Bitmap bitmap = BitmapFactory.decodeFile(storageDirectory + "/" + event.getPhotoPath());
@@ -487,10 +487,6 @@ public class ModifyEventActivity extends AppCompatActivity {
             });
         }
     }
-
-
-
-
 
     public class EventsRegistryPutTask extends AsyncTask<String, Void, Boolean> {
 
