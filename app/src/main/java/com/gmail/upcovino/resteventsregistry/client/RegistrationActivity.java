@@ -216,6 +216,7 @@ public class RegistrationActivity extends AppCompatActivity {
 
     private void addUserCallback(boolean isUserAdded) {
         if (isUserAdded) {
+            telegramOptionAlertDialog();
             if (userImageViewPath == null) {
                 Toast.makeText(getApplicationContext(), user.getName() + " " + user.getSurname() + getString(R.string.successful_registration), Toast.LENGTH_LONG).show();
                 telegramOptionAlertDialog();
@@ -260,7 +261,6 @@ public class RegistrationActivity extends AppCompatActivity {
     private void uploadUserPhotoCallback(boolean isPhotoAdded) {
         if (isPhotoAdded) {
             Toast.makeText(getApplicationContext(), user.getName() + " " + user.getSurname() + getString(R.string.successful_registration), Toast.LENGTH_LONG).show();
-            finish();
         } else
             Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_LONG).show();
     }

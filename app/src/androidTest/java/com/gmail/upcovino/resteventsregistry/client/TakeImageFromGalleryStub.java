@@ -21,8 +21,29 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 
 public class TakeImageFromGalleryStub {
     private static final String GALLERY_PHOTO_PATH = "/storage/emulated/0/Pictures/eventsRegistry/test.jpg";
+    private static final Object lock = new Object();
 
     public static void exec() {
+        synchronized(lock) {
+            MediaScannerConnection.scanFile(getInstrumentation().getTargetContext(),
+                    new String[]{new File(GALLERY_PHOTO_PATH).getAbsolutePath()},
+                    null,
+                    (path, uri) -> {
+                        synchronized(lock) {
+                            continueExec(uri);
+                            lock.notifyAll();
+                        }
+                    });
+
+            try {
+                lock.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static void continueExec(Uri outputUri) {
         // Gallery handling by stub ----------------------------------------------------------------
 
         final Intent resultData = new Intent(Intent.ACTION_PICK,
@@ -33,14 +54,7 @@ public class TakeImageFromGalleryStub {
             public void onIntentSent(Intent intent) {
                 if (intent.getAction().equals(Intent.ACTION_CHOOSER)) {
                     if (intent.hasExtra(Intent.EXTRA_INITIAL_INTENTS)) {
-                        MediaScannerConnection.scanFile(getInstrumentation().getTargetContext(),
-                                new String[] { new File(GALLERY_PHOTO_PATH).getAbsolutePath() },
-                                null,
-                                (path, uri) -> {
-                                    Uri outputUri = uri;
-
-                                    resultData.setData(outputUri);
-                                });
+                        resultData.setData(outputUri);
                     }
                 }
             }
