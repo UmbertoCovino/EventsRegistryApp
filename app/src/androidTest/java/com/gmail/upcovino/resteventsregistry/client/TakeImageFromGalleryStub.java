@@ -3,15 +3,24 @@ package com.gmail.upcovino.resteventsregistry.client;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.support.v4.content.FileProvider;
+import android.util.Log;
+
+import com.gmail.upcovino.resteventsregistry.BuildConfig;
+
+import java.io.File;
+
 import androidx.test.runner.intent.IntentCallback;
 import androidx.test.runner.intent.IntentMonitorRegistry;
 
 import static androidx.test.espresso.intent.Intents.intending;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 public class TakeImageFromGalleryStub {
-    private static final String GALLERY_PHOTO_ID = "/205"; // è un intero che identifica la foto ma non so da dove vien fuori; l'ho preso stampandolo dalla RegistrationActivity durante una normale interazione con l'app (mentre prendevo una foto dalla galleria)
+    private static final String GALLERY_PHOTO_PATH = "/storage/emulated/0/Pictures/eventsRegistry/test.jpg";
 
     public static void exec() {
         // Gallery handling by stub ----------------------------------------------------------------
@@ -24,10 +33,14 @@ public class TakeImageFromGalleryStub {
             public void onIntentSent(Intent intent) {
                 if (intent.getAction().equals(Intent.ACTION_CHOOSER)) {
                     if (intent.hasExtra(Intent.EXTRA_INITIAL_INTENTS)) {
-                        Intent pickPhotoIntent = (Intent) intent.getParcelableArrayExtra(Intent.EXTRA_INITIAL_INTENTS)[1]; // not used but important to have
+                        MediaScannerConnection.scanFile(getInstrumentation().getTargetContext(),
+                                new String[] { new File(GALLERY_PHOTO_PATH).getAbsolutePath() },
+                                null,
+                                (path, uri) -> {
+                                    Uri outputUri = uri;
 
-                        resultData.setData(Uri.parse(resultData.getData() + GALLERY_PHOTO_ID));
-                        //Log.i("TEST_LOG", resultData.getData() + "");
+                                    resultData.setData(outputUri);
+                                });
                     }
                 }
             }

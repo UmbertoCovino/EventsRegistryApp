@@ -15,11 +15,16 @@ import com.google.gson.Gson;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.restlet.data.ChallengeScheme;
+import org.restlet.resource.ClientResource;
+
+import java.io.IOException;
 
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
@@ -68,15 +73,15 @@ public class SigninActivityTest {
         editor.commit();
     }
 
-//    @After
-//    public void deleteUser() throws IOException {
-//        user = new User(name, surname, email, password);
-//        ClientResource cr = new ClientResource(Constants.BASE_URI + "users/"+user.getEmail());
-//        String jsonResponse = null;
-//        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, user.getEmail(), user.getPassword());
-//
-//        jsonResponse = cr.delete().getText();
-//    }
+    @After
+    public void deleteUser() throws IOException {
+        user = new User(name, surname, email, password);
+        ClientResource cr = new ClientResource(Constants.BASE_URI + "users/"+user.getEmail());
+        String jsonResponse = null;
+        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, user.getEmail(), user.getPassword());
+
+        jsonResponse = cr.delete().getText();
+    }
 
     @Test
     public void signinActivityTest() {
@@ -97,8 +102,8 @@ public class SigninActivityTest {
 
 
         // Call stub
-//        TakeImageFromGalleryStub.exec();
-        TakeImageFromCameraStub.exec();
+        TakeImageFromGalleryStub.exec();
+//        TakeImageFromCameraStub.exec();
 
         // Perform action on photo button
         onView(withId(R.id.ar_chooseImageFloatingActionButton)).perform(click());
