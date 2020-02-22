@@ -1,15 +1,8 @@
 package com.gmail.upcovino.resteventsregistry.client;
 
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.ViewInteraction;
-import android.support.test.filters.LargeTest;
-import android.support.test.rule.ActivityTestRule;
-import android.support.test.rule.GrantPermissionRule;
-import android.support.test.runner.AndroidJUnit4;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -39,23 +32,34 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
-import static android.support.test.espresso.action.ViewActions.replaceText;
-import static android.support.test.espresso.action.ViewActions.scrollTo;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withParent;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.ViewInteraction;
+import androidx.test.espresso.contrib.PickerActions;
+import androidx.test.espresso.intent.rule.IntentsTestRule;
+import androidx.test.filters.LargeTest;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.rule.ActivityTestRule;
+import androidx.test.rule.GrantPermissionRule;
+
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.replaceText;
+import static androidx.test.espresso.action.ViewActions.scrollTo;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withParent;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class Subscribe_ActivityTest {
+public class EventsActivityTest_DeleteEvent {
     private String email = "a@gmail.com";
     private String password = "p";
     private Gson gson;
@@ -71,7 +75,7 @@ public class Subscribe_ActivityTest {
     @BeforeClass
     @AfterClass
     public static void resetSharedPref(){
-        Context appContext = InstrumentationRegistry.getTargetContext();
+        Context appContext = getInstrumentation().getTargetContext();
 
         SharedPreferences preferences =
                 PreferenceManager.getDefaultSharedPreferences(appContext);
@@ -98,15 +102,6 @@ public class Subscribe_ActivityTest {
 
     @After
     public void after() throws IOException {
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
-        String jsonResponse = cr.get().getText();
-        Event[] events = gson.fromJson(jsonResponse, Event[].class);
-
-        cr = new ClientResource(Constants.BASE_URI + "events/" + events[0].getId() + "/subscribers");
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
-        cr.delete();
-
         deleteEvents();
     }
 
@@ -124,7 +119,7 @@ public class Subscribe_ActivityTest {
     }
 
     @Test
-    public void subscribe_ActivityTest() {
+    public void deleteEvent_ActivityTest() {
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.al_emailEditText),
                         childAtPosition(
@@ -169,19 +164,28 @@ public class Subscribe_ActivityTest {
                         isDisplayed()));
         appCompatTextView.perform(click());
 
-        ViewInteraction appCompatButton2 = onView(
-                allOf(withId(R.id.aev_subscribe_button), withText("parteciperò"),
+        ViewInteraction actionMenuItemView = onView(
+                allOf(withId(R.id.aev_menu_remove), withContentDescription("Remove"),
                         childAtPosition(
                                 childAtPosition(
-                                        withClassName(is("android.support.v4.widget.NestedScrollView")),
-                                        0),
-                                2),
+                                        withId(R.id.aev_toolbar),
+                                        3),
+                                0),
                         isDisplayed()));
-        appCompatButton2.perform(click());
+        actionMenuItemView.perform(click());
 
-        ViewInteraction button = onView(
-                allOf(withId(R.id.aev_subscribe_button)));
-        button.check(matches(isDisplayed()));
+        ViewInteraction appCompatButton2 = onView(
+                allOf(withId(android.R.id.button1), withText("Yes"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withClassName(is("android.widget.ScrollView")),
+                                        0),
+                                3)));
+        appCompatButton2.perform(scrollTo(), click());
+
+        ViewInteraction textView = onView(
+                allOf(withText("Upcoming events")));
+        textView.check(matches(withText("Upcoming events")));
     }
 
     private static Matcher<View> childAtPosition(

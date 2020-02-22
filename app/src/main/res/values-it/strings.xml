@@ -60,7 +60,8 @@
     <string name="add_event">Aggiungi evento</string>
     <string name="title">Titolo</string>
     <string name="description">Descrizione</string>
-    <string name="when">Quando</string>
+    <string name="when_starts">Inizia il</string>
+    <string name="when_ends">Termina il</string>
     <string name="from_time">Dalle</string>
     <string name="to_time">Alle</string>
     <string name="empty_title_field_message">Il campo titolo non può essere vuoto.</string>

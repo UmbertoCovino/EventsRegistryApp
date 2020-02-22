@@ -47,7 +47,6 @@ import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
-import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
@@ -56,7 +55,7 @@ import static org.hamcrest.Matchers.is;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class DeleteEvent_ActivityTest {
+public class EventActivityTest_Subscribe {
     private String email = "a@gmail.com";
     private String password = "p";
     private Gson gson;
@@ -99,6 +98,15 @@ public class DeleteEvent_ActivityTest {
 
     @After
     public void after() throws IOException {
+        ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
+        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
+        String jsonResponse = cr.get().getText();
+        Event[] events = gson.fromJson(jsonResponse, Event[].class);
+
+        cr = new ClientResource(Constants.BASE_URI + "events/" + events[0].getId() + "/subscribers");
+        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
+        cr.delete();
+
         deleteEvents();
     }
 
@@ -116,7 +124,7 @@ public class DeleteEvent_ActivityTest {
     }
 
     @Test
-    public void deleteEvent_ActivityTest() {
+    public void subscribe_ActivityTest() {
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.al_emailEditText),
                         childAtPosition(
@@ -161,28 +169,19 @@ public class DeleteEvent_ActivityTest {
                         isDisplayed()));
         appCompatTextView.perform(click());
 
-        ViewInteraction actionMenuItemView = onView(
-                allOf(withId(R.id.aev_menu_remove), withContentDescription("Remove"),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(R.id.aev_toolbar),
-                                        3),
-                                0),
-                        isDisplayed()));
-        actionMenuItemView.perform(click());
-
         ViewInteraction appCompatButton2 = onView(
-                allOf(withId(android.R.id.button1), withText("Yes"),
+                allOf(withId(R.id.aev_subscribe_button), withText("parteciperò"),
                         childAtPosition(
                                 childAtPosition(
-                                        withClassName(is("android.widget.ScrollView")),
+                                        withClassName(is("android.support.v4.widget.NestedScrollView")),
                                         0),
-                                3)));
-        appCompatButton2.perform(scrollTo(), click());
+                                2),
+                        isDisplayed()));
+        appCompatButton2.perform(click());
 
-        ViewInteraction textView = onView(
-                allOf(withText("Upcoming events")));
-        textView.check(matches(withText("Upcoming events")));
+        ViewInteraction button = onView(
+                allOf(withId(R.id.aev_subscribe_button)));
+        button.check(matches(isDisplayed()));
     }
 
     private static Matcher<View> childAtPosition(

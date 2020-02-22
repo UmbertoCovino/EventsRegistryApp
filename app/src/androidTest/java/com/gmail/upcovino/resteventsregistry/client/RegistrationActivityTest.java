@@ -29,7 +29,8 @@ import java.io.IOException;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.filters.LargeTest;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.rule.GrantPermissionRule;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
@@ -47,7 +48,7 @@ import static org.hamcrest.Matchers.is;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class SigninActivityTest {
+public class RegistrationActivityTest {
     private String name = "SIGNIN_NAME_ETEST";
     private String surname = "SIGNIN_SURNAME_ETEST";
     private String email = "SIGNIN_ETEST@gmail.com";
@@ -59,6 +60,11 @@ public class SigninActivityTest {
 //    public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
     @Rule
     public IntentsTestRule<LoginActivity> intentsRule = new IntentsTestRule<>(LoginActivity.class, true, false);
+
+    @Rule
+    public GrantPermissionRule mGrantPermissionRule =
+            GrantPermissionRule.grant(
+                    "android.permission.WRITE_EXTERNAL_STORAGE");
 
     @BeforeClass
     @AfterClass
@@ -84,7 +90,7 @@ public class SigninActivityTest {
     }
 
     @Test
-    public void signinActivityTest() {
+    public void signinActivityTestWithGallery() {
         Intent intent = new Intent();
         intent.putExtra("LoginActivity", "LoginActivity");
         intentsRule.launchActivity(intent);
@@ -104,6 +110,97 @@ public class SigninActivityTest {
         // Call stub
         TakeImageFromGalleryStub.exec();
 //        TakeImageFromCameraStub.exec();
+
+        // Perform action on photo button
+        onView(withId(R.id.ar_chooseImageFloatingActionButton)).perform(click());
+
+
+
+        ViewInteraction appCompatEditText = onView(
+                allOf(withId(R.id.ar_nameEditText),
+                        childAtPosition(
+                                childAtPosition(
+                                        withClassName(is("android.support.v4.widget.NestedScrollView")),
+                                        0),
+                                0),
+                        isDisplayed()));
+        appCompatEditText.perform(replaceText(name), closeSoftKeyboard());
+
+        ViewInteraction appCompatEditText2 = onView(
+                allOf(withId(R.id.ar_surnameEditText),
+                        childAtPosition(
+                                childAtPosition(
+                                        withClassName(is("android.support.v4.widget.NestedScrollView")),
+                                        0),
+                                1),
+                        isDisplayed()));
+        appCompatEditText2.perform(replaceText(surname), closeSoftKeyboard());
+
+        ViewInteraction appCompatEditText3 = onView(
+                allOf(withId(R.id.ar_emailEditText),
+                        childAtPosition(
+                                childAtPosition(
+                                        withClassName(is("android.support.v4.widget.NestedScrollView")),
+                                        0),
+                                2),
+                        isDisplayed()));
+        appCompatEditText3.perform(replaceText(email), closeSoftKeyboard());
+
+        ViewInteraction appCompatEditText4 = onView(
+                allOf(withId(R.id.ar_passwordEditText),
+                        childAtPosition(
+                                childAtPosition(
+                                        withClassName(is("android.support.v4.widget.NestedScrollView")),
+                                        0),
+                                3),
+                        isDisplayed()));
+        appCompatEditText4.perform(replaceText(password), closeSoftKeyboard());
+
+        ViewInteraction actionMenuItemView = onView(
+                allOf(withId(R.id.menu_done), withText("Done"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(R.id.ar_toolbar),
+                                        3),
+                                0),
+                        isDisplayed()));
+        actionMenuItemView.perform(click());
+
+        ViewInteraction appCompatButton = onView(
+                allOf(withId(android.R.id.button1), withText("Yes"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withClassName(is("android.widget.ScrollView")),
+                                        0),
+                                3)));
+        appCompatButton.perform(scrollTo(), click());
+
+        ViewInteraction textView = onView(
+                allOf(withId(android.R.id.message), withText("Do you want enable telegram notifications?")));
+        textView.check(matches(withText("Do you want enable telegram notifications?")));
+    }
+
+    @Test
+    public void signinActivityTestWithCamera() {
+        Intent intent = new Intent();
+        intent.putExtra("LoginActivity", "LoginActivity");
+        intentsRule.launchActivity(intent);
+
+
+        ViewInteraction appCompatTextView = onView(
+                allOf(withId(R.id.al_signInTextView), withText("Sign in now!"),
+                        childAtPosition(
+                                allOf(withId(R.id.linearLayout),
+                                        childAtPosition(
+                                                withClassName(is("android.support.constraint.ConstraintLayout")),
+                                                5)),
+                                1)));
+        appCompatTextView.perform(scrollTo(), click());
+
+
+        // Call stub
+//        TakeImageFromGalleryStub.exec();
+        TakeImageFromCameraStub.exec();
 
         // Perform action on photo button
         onView(withId(R.id.ar_chooseImageFloatingActionButton)).perform(click());

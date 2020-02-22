@@ -63,9 +63,10 @@
     <string name="add_event">Add event</string>
     <string name="title">Title</string>
     <string name="description">Description</string>
-    <string name="when">When</string>
-    <string name="from_time">From</string>
-    <string name="to_time">To</string>
+    <string name="when_starts">Starts on</string>
+    <string name="when_ends">Ends on</string>
+    <string name="from_time">From time</string>
+    <string name="to_time">To time</string>
     <string name="empty_title_field_message">The title field cannot be empty.</string>
     <string name="empty_description_field_message">The description field cannot be empty.</string>
     <string name="empty_date_field_message">The date field cannot be empty.</string>

@@ -20,7 +20,7 @@ import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 public class TakeImageFromGalleryStub {
-    private static final String GALLERY_PHOTO_PATH = "/storage/emulated/0/Pictures/eventsRegistry/test.jpg";
+    private static final String GALLERY_PHOTO_PATH = "/storage/emulated/0/Download/test.jpg";
     private static final Object lock = new Object();
 
     public static void exec() {
