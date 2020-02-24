@@ -38,8 +38,8 @@
     <string name="successful_registration">, the registration was successful.</string>
 
     <string name="events">Events</string>
-    <string name="when_the">"the "</string>
-    <string name="from">" from "</string>
+    <string name="at">" at "</string>
+    <string name="from">"from "</string>
     <string name="to">" to "</string>
     <string name="published_by">"Published by "</string>
     <string name="authentication_required">To view this content you need to be authenticated.</string>

@@ -55,6 +55,8 @@ public class UserActivityTest {
             GrantPermissionRule.grant(
                     "android.permission.WRITE_EXTERNAL_STORAGE");
 
+    // BEFORE/AFTER ALL ----------------------------------------------------------------------------
+
     @BeforeClass
     @AfterClass
     public static void resetSharedPref(){
@@ -68,8 +70,12 @@ public class UserActivityTest {
         editor.commit();
     }
 
+    // BEFORE/AFTER EACH ---------------------------------------------------------------------------
+
+    // TEST ----------------------------------------------------------------------------------------
+
     @Test
-    public void userActivityTest() {
+    public void viewUser() {
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.al_emailEditText),
                         childAtPosition(

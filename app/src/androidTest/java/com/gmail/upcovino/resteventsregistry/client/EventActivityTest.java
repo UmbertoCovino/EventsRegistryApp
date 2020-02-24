@@ -4,12 +4,6 @@ package com.gmail.upcovino.resteventsregistry.client;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.ViewInteraction;
-import android.support.test.filters.LargeTest;
-import android.support.test.rule.ActivityTestRule;
-import android.support.test.rule.GrantPermissionRule;
-import android.support.test.runner.AndroidJUnit4;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -39,26 +33,37 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
-import static android.support.test.espresso.action.ViewActions.replaceText;
-import static android.support.test.espresso.action.ViewActions.scrollTo;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withParent;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.ViewInteraction;
+import androidx.test.espresso.contrib.PickerActions;
+import androidx.test.espresso.intent.rule.IntentsTestRule;
+import androidx.test.filters.LargeTest;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.rule.ActivityTestRule;
+import androidx.test.rule.GrantPermissionRule;
+
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.replaceText;
+import static androidx.test.espresso.action.ViewActions.scrollTo;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withParent;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class EventActivityTest_Subscribe {
-    private String email = "a@gmail.com";
-    private String password = "p";
-    private Gson gson;
+public class EventActivityTest {
+    private static String email = "a@gmail.com";
+    private static String password = "p";
+    private static Gson gson;
 
     @Rule
     public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
@@ -68,10 +73,11 @@ public class EventActivityTest_Subscribe {
             GrantPermissionRule.grant(
                     "android.permission.WRITE_EXTERNAL_STORAGE");
 
+    // BEFORE/AFTER ALL ----------------------------------------------------------------------------
+
     @BeforeClass
-    @AfterClass
     public static void resetSharedPref(){
-        Context appContext = InstrumentationRegistry.getTargetContext();
+        Context appContext = getInstrumentation().getTargetContext();
 
         SharedPreferences preferences =
                 PreferenceManager.getDefaultSharedPreferences(appContext);
@@ -81,23 +87,24 @@ public class EventActivityTest_Subscribe {
         editor.commit();
     }
 
-    @Before
-    public void before() throws IOException, ParseException {
+    @BeforeClass
+    public static void beforeClass() throws IOException, ParseException {
         gson = new GsonBuilder()
                 .registerTypeAdapter(Date.class, new Constants.DateTypeAdapter())
                 .create();
 
-        this.deleteEvents();
+        deleteEvents();
+
         Event event = new Event("title_test",
                 Event.DATETIME_SDF.parse("2020-03-01"+ " "
                         + "12:00:00"),
                 Event.DATETIME_SDF.parse("2020-03-08" + " "
                         + "12:00:00"), "description_test");
-        this.addEvent(event);
+        addEvent(event);
     }
 
-    @After
-    public void after() throws IOException {
+    @AfterClass
+    public static void afterClass() throws IOException {
         ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
         cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
         String jsonResponse = cr.get().getText();
@@ -110,21 +117,32 @@ public class EventActivityTest_Subscribe {
         deleteEvents();
     }
 
-    private void addEvent(Event e) throws IOException {
+    // BEFORE/AFTER EACH ---------------------------------------------------------------------------
+
+    @After
+    public void after2(){
+        resetSharedPref();
+    }
+
+    // UTILS ---------------------------------------------------------------------------------------
+
+    private static void addEvent(Event e) throws IOException {
         ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
         cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
         StringRepresentation sr = new StringRepresentation(gson.toJson(e), MediaType.APPLICATION_JSON);
         String jsonResponse = cr.post(sr).getText();
     }
 
-    private void deleteEvents() throws IOException {
+    private static void deleteEvents() throws IOException {
         ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
         cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
         String jsonResponse = cr.delete().getText();
     }
 
+    // TEST ----------------------------------------------------------------------------------------
+
     @Test
-    public void subscribe_ActivityTest() {
+    public void subscribeEvent() {
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.al_emailEditText),
                         childAtPosition(

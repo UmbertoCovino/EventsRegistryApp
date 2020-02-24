@@ -1,15 +1,17 @@
 package com.gmail.upcovino.resteventsregistry.client;
 
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.DatePicker;
 
 import com.gmail.upcovino.resteventsregistry.R;
+import com.gmail.upcovino.resteventsregistry.commons.User;
+import com.google.gson.Gson;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -23,9 +25,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.data.MediaType;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.ViewInteraction;
@@ -55,10 +61,16 @@ import static org.hamcrest.Matchers.is;
 @RunWith(AndroidJUnit4.class)
 public class AddEventActivityTest {
 
-    private String title = "TITLE_ETEST";
-    private String description = "DESCRIPTION_ETEST";
-    private String email = "a@gmail.com";
-    private String password = "p";
+    private static String title = "TITLE_ETEST";
+    private static String description = "DESCRIPTION_ETEST";
+
+    private static String name = "LOGIN_NAME_ETEST";
+    private static String surname = "LOGIN_SURNAME_ETEST";
+    private static String email = "LOGIN_ETEST@gmail.com";
+    private static String password = "PASSWORD_ETEST";
+
+    private static Gson gson = new Gson();
+    private static User user;
 
     @Rule
     public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
@@ -68,8 +80,9 @@ public class AddEventActivityTest {
             GrantPermissionRule.grant(
                     "android.permission.WRITE_EXTERNAL_STORAGE");
 
+    // BEFORE/AFTER ALL ----------------------------------------------------------------------------
+
     @BeforeClass
-    @AfterClass
     public static void resetSharedPref(){
         Context appContext = getInstrumentation().getTargetContext();
 
@@ -81,16 +94,45 @@ public class AddEventActivityTest {
         editor.commit();
     }
 
-    @After
-    @Before
-    public void deleteEvent() throws IOException {
+    @BeforeClass
+    public static void userRegistration() throws IOException {
+        user = new User(name, surname, email, password);
+        ClientResource cr = new ClientResource(Constants.BASE_URI + "users");
+        String jsonResponse = null;
+
+        StringRepresentation sr = new StringRepresentation(gson.toJson(user),
+                MediaType.APPLICATION_JSON);
+        jsonResponse = cr.post(sr).getText();
+    }
+
+    @BeforeClass
+    @AfterClass
+    public static void deleteEvents() throws IOException {
         ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
         cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
         String jsonResponse = cr.delete().getText();
     }
 
+    @AfterClass
+    public static void deleteUser() throws IOException {
+        ClientResource cr = new ClientResource(Constants.BASE_URI + "users/"+user.getEmail());
+        String jsonResponse = null;
+        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, user.getEmail(), user.getPassword());
+
+        jsonResponse = cr.delete().getText();
+    }
+
+    // BEFORE/AFTER EACH ---------------------------------------------------------------------------
+
+    @After
+    public void after(){
+        resetSharedPref();
+    }
+
+    // TEST ----------------------------------------------------------------------------------------
+
     @Test
-    public void addEventActivityTest() {
+    public void addEvent() {
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.al_emailEditText),
                         childAtPosition(
@@ -107,7 +149,7 @@ public class AddEventActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 0)));
-        appCompatEditText2.perform(scrollTo(), replaceText("a@gmail.com"), closeSoftKeyboard());
+        appCompatEditText2.perform(scrollTo(), replaceText(email), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText3 = onView(
                 allOf(withId(R.id.al_passwordEditText),
@@ -116,7 +158,7 @@ public class AddEventActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 1)));
-        appCompatEditText3.perform(scrollTo(), replaceText("p"), closeSoftKeyboard());
+        appCompatEditText3.perform(scrollTo(), replaceText(password), closeSoftKeyboard());
 
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.al_loginButton), withText("Login"),
@@ -178,8 +220,23 @@ public class AddEventActivityTest {
                         isDisplayed()));
         appCompatImageButton.perform(click());
 
+        Date date = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        int startDateDay = cal.get(Calendar.DATE) + 1;
+        int startDateMonth = cal.get(Calendar.MONTH) + 1;
+        int startDateYear = cal.get(Calendar.YEAR);
+
+        cal.add(Calendar.DATE, 1);
+        int endDateDay = cal.get(Calendar.DATE);
+        int endDateMonth = cal.get(Calendar.MONTH) + 1;
+        int endDateYear = cal.get(Calendar.YEAR);
+
+        Log.e("TAG", startDateDay+"-"+startDateMonth+"-"+startDateYear+" -> "+endDateDay+"-"+endDateMonth+"-"+endDateYear);
+
+
         // to set Date in DayPicker
-        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 2, 10));
+        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(startDateYear, startDateMonth, startDateDay));
 
         ViewInteraction appCompatButton2 = onView(
                 allOf(withId(android.R.id.button1), withText("OK"),
@@ -231,7 +288,7 @@ public class AddEventActivityTest {
         appCompatImageButton2.perform(click());
 
         // to set Date in DayPicker
-        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform((ViewAction) PickerActions.setDate(2020, 02, 11));
+        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform((ViewAction) PickerActions.setDate(endDateYear, endDateMonth, endDateDay));
 
         ViewInteraction appCompatButton4 = onView(
                 allOf(withId(android.R.id.button1), withText("OK"),

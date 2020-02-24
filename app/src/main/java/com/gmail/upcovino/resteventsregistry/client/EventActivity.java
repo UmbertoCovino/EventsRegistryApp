@@ -117,7 +117,7 @@ public class EventActivity extends AppCompatActivity {
             eventPhotoImageView.setImageResource(R.drawable.default_event_icon);
 
 //        ((TextView) findViewById(R.id.aev_titleTextView)).setText(event.getTitle());
-        ((TextView) findViewById(R.id.aev_whenTextView)).setText(getApplicationContext().getString(R.string.when_the) + getApplicationContext().getString(R.string.from) + Event.DATETIME_SDF.format(event.getStartDate()) + getApplicationContext().getString(R.string.to) + Event.DATETIME_SDF.format(event.getEndDate()));
+        ((TextView) findViewById(R.id.aev_whenTextView)).setText(getApplicationContext().getString(R.string.from) + Event.DATE_SDF.format(event.getStartDate()) + getApplicationContext().getString(R.string.at) + Event.TIME_SDF.format(event.getStartDate()) + getApplicationContext().getString(R.string.to) + Event.DATE_SDF.format(event.getEndDate()) + getApplicationContext().getString(R.string.at) + Event.TIME_SDF.format(event.getEndDate()));
         ((TextView) findViewById(R.id.aev_descriptionTextView)).setText(event.getDescription());
     }
 

@@ -74,6 +74,23 @@ public class ModifyEventActivityTest {
             GrantPermissionRule.grant(
                     "android.permission.WRITE_EXTERNAL_STORAGE");
 
+    // BEFORE/AFTER ALL ----------------------------------------------------------------------------
+
+    @BeforeClass
+    @AfterClass
+    public static void resetSharedPref(){
+        Context appContext = getInstrumentation().getTargetContext();
+
+        SharedPreferences preferences =
+                PreferenceManager.getDefaultSharedPreferences(appContext);
+
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        editor.commit();
+    }
+
+    // BEFORE/AFTER EACH ---------------------------------------------------------------------------
+
     @Before
     public void before() throws IOException, ParseException {
         ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
@@ -101,21 +118,10 @@ public class ModifyEventActivityTest {
         String jsonResponse = cr.delete().getText();
     }
 
-    @BeforeClass
-    @AfterClass
-    public static void resetSharedPref(){
-        Context appContext = getInstrumentation().getTargetContext();
-
-        SharedPreferences preferences =
-                PreferenceManager.getDefaultSharedPreferences(appContext);
-
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.clear();
-        editor.commit();
-    }
+    // TEST ----------------------------------------------------------------------------------------
 
     @Test
-    public void modifyEvent_ActivityTest() {
+    public void modifyEvent() {
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.al_emailEditText),
                         childAtPosition(

@@ -39,9 +39,9 @@
     <string name="the_photo_is_optional">(la foto è facoltativa)</string>
 
     <string name="events">Eventi</string>
-    <string name="when_the">"il "</string>
-    <string name="from">" dalle "</string>
-    <string name="to">" alle "</string>
+    <string name="at">" alle "</string>
+    <string name="from">"dal "</string>
+    <string name="to">" al "</string>
     <string name="published_by">"Pubblicato da "</string>
     <string name="authentication_required">Per visualizzare questo contenuto è necessario essere autenticati.</string>
     <string name="successful_logout">Logout effettuato.</string>
@@ -105,6 +105,9 @@
     <string name="invalid_end_time_field_message">L\'ora di fine non può essere precedente all\'ora di inizio.</string>
     <string name="invalid_end_date_field_message">La data di fine non può essere precedente alla data di inizio.</string>
     <string name="pick_image_intent">Apri con</string>
+
+    <string name="navigation_drawer_open">Apri la barra di navigazione</string>
+    <string name="navigation_drawer_close">Chiudi la barra di navigazione</string>
 
 
 </resources>

@@ -4,6 +4,7 @@ package com.gmail.upcovino.resteventsregistry.client;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -30,6 +31,7 @@ import org.restlet.resource.ClientResource;
 
 import java.io.IOException;
 
+import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.contrib.PickerActions;
@@ -46,6 +48,7 @@ import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -58,12 +61,12 @@ import static org.hamcrest.Matchers.is;
 @RunWith(AndroidJUnit4.class)
 public class LoginActivityTest {
 
-    private String name = "LOGIN_NAME_ETEST";
-    private String surname = "LOGIN_SURNAME_ETEST";
-    private String email = "LOGIN_ETEST@gmail.com";
-    private String password = "PASSWORD_ETEST";
-    private Gson gson = new Gson();
-    private User user;
+    private static String name = "LOGIN_NAME_ETEST";
+    private static String surname = "LOGIN_SURNAME_ETEST";
+    private static String email = "LOGIN_ETEST@gmail.com";
+    private static String password = "PASSWORD_ETEST";
+    private static Gson gson = new Gson();
+    private static User user;
 
     @Rule
     public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
@@ -73,28 +76,9 @@ public class LoginActivityTest {
             GrantPermissionRule.grant(
                     "android.permission.WRITE_EXTERNAL_STORAGE");
 
-    @Before
-    public void userRegistration() throws IOException {
-        user = new User(name, surname, email, password);
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "users");
-        String jsonResponse = null;
-
-        StringRepresentation sr = new StringRepresentation(gson.toJson(user),
-                MediaType.APPLICATION_JSON);
-        jsonResponse = cr.post(sr).getText();
-    }
-
-    @After
-    public void deleteUser() throws IOException {
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "users/"+user.getEmail());
-        String jsonResponse = null;
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, user.getEmail(), user.getPassword());
-
-        jsonResponse = cr.delete().getText();
-    }
+    // BEFORE/AFTER ALL ----------------------------------------------------------------------------
 
     @BeforeClass
-    @AfterClass
     public static void resetSharedPref(){
         Context appContext = getInstrumentation().getTargetContext();
 
@@ -106,8 +90,37 @@ public class LoginActivityTest {
         editor.commit();
     }
 
+    @BeforeClass
+    public static void userRegistration() throws IOException {
+        user = new User(name, surname, email, password);
+        ClientResource cr = new ClientResource(Constants.BASE_URI + "users");
+        String jsonResponse = null;
+
+        StringRepresentation sr = new StringRepresentation(gson.toJson(user),
+                MediaType.APPLICATION_JSON);
+        jsonResponse = cr.post(sr).getText();
+    }
+
+    @AfterClass
+    public static void deleteUser() throws IOException {
+        ClientResource cr = new ClientResource(Constants.BASE_URI + "users/"+user.getEmail());
+        String jsonResponse = null;
+        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, user.getEmail(), user.getPassword());
+
+        jsonResponse = cr.delete().getText();
+    }
+
+    // BEFORE/AFTER EACH ---------------------------------------------------------------------------
+
+    @After
+    public void after(){
+        resetSharedPref();
+    }
+
+    // TEST ----------------------------------------------------------------------------------------
+
     @Test
-    public void loginActivityTest() {
+    public void login() {
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.al_emailEditText),
                         childAtPosition(
@@ -138,6 +151,46 @@ public class LoginActivityTest {
         ViewInteraction textView = onView(
                 allOf(withText("Upcoming events")));
         textView.check(matches(withText("Upcoming events")));
+    }
+
+    @Test
+    public void loginInvalidCredentials() {
+        ViewInteraction appCompatEditText = onView(
+                allOf(withId(R.id.al_emailEditText),
+                        childAtPosition(
+                                childAtPosition(
+                                        withClassName(is("android.widget.ScrollView")),
+                                        0),
+                                0)));
+        appCompatEditText.perform(scrollTo(), replaceText("INVALID_EMAIL"), closeSoftKeyboard());
+
+        ViewInteraction appCompatEditText2 = onView(
+                allOf(withId(R.id.al_passwordEditText),
+                        childAtPosition(
+                                childAtPosition(
+                                        withClassName(is("android.widget.ScrollView")),
+                                        0),
+                                1)));
+        appCompatEditText2.perform(scrollTo(), replaceText("INVALID_PASSWORD"), closeSoftKeyboard());
+
+        ViewInteraction appCompatButton = onView(
+                allOf(withId(R.id.al_loginButton), withText("Login"),
+                        childAtPosition(
+                                childAtPosition(
+                                        withClassName(is("android.widget.ScrollView")),
+                                        0),
+                                2)));
+        appCompatButton.perform(scrollTo(), click());
+
+        ViewInteraction editText = onView(
+                allOf(withId(R.id.al_emailEditText), withText("INVALID_EMAIL"),
+                        childAtPosition(
+                                childAtPosition(
+                                        IsInstanceOf.<View>instanceOf(android.widget.ScrollView.class),
+                                        0),
+                                0),
+                        isDisplayed()));
+        editText.check(matches(withText("INVALID_EMAIL")));
     }
 
     private static Matcher<View> childAtPosition(

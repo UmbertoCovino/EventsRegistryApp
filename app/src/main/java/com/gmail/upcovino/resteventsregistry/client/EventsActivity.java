@@ -775,7 +775,7 @@ public class EventsActivity extends AppCompatActivity implements NavigationView.
                 }
             });
 
-            whenTextView.setText(getContext().getString(R.string.when_the) + getContext().getString(R.string.from) + Event.DATETIME_SDF.format(event.getStartDate()) + getContext().getString(R.string.to) + Event.DATETIME_SDF.format(event.getEndDate()));
+            whenTextView.setText(getContext().getString(R.string.from) + Event.DATE_SDF.format(event.getStartDate()) + getContext().getString(R.string.at) + Event.TIME_SDF.format(event.getStartDate()) + getContext().getString(R.string.to) + Event.DATE_SDF.format(event.getEndDate()) + getContext().getString(R.string.at) + Event.TIME_SDF.format(event.getEndDate()));
             descriptionTextView.setText(event.getDescription());
 
             eventPhotoImageView.setPadding(0, 0, 0, 0);
