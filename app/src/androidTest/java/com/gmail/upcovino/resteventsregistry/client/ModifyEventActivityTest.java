@@ -1,6 +1,7 @@
 package com.gmail.upcovino.resteventsregistry.client;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -60,11 +61,6 @@ import static org.hamcrest.Matchers.is;
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class ModifyEventActivityTest {
-    private String email = "a@gmail.com";
-    private String password = "p";
-    private String title = "TITLE_ETEST";
-    private String description = "DESCRIPTION_ETEST";
-    private Gson gson;
 
     @Rule
     public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
@@ -77,51 +73,53 @@ public class ModifyEventActivityTest {
     // BEFORE/AFTER ALL ----------------------------------------------------------------------------
 
     @BeforeClass
+    public static void beforeClass() throws IOException {
+        EspressoTestUtils.resetSharedPref();
+        EspressoTestUtils.userRegistration();
+    }
+
     @AfterClass
-    public static void resetSharedPref(){
-        Context appContext = getInstrumentation().getTargetContext();
-
-        SharedPreferences preferences =
-                PreferenceManager.getDefaultSharedPreferences(appContext);
-
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.clear();
-        editor.commit();
+    public static void afterClass() throws IOException {
+        EspressoTestUtils.deleteAllEvents();
+        EspressoTestUtils.deleteUser();
     }
 
     // BEFORE/AFTER EACH ---------------------------------------------------------------------------
 
     @Before
     public void before() throws IOException, ParseException {
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
-        String jsonResponse = cr.delete().getText();
+        EspressoTestUtils.deleteAllEvents();
 
-        gson = new GsonBuilder()
-                .registerTypeAdapter(Date.class, new Constants.DateTypeAdapter())
-                .create();
-        Event event = new Event(title,
-                Event.DATETIME_SDF.parse("2020-02-10"+ " "
+        Event event = new Event(EspressoTestUtils.TEST_EVENT_TITLE,
+                Event.DATETIME_SDF.parse(EspressoTestUtils.START_DATE_YEAR+"-"+EspressoTestUtils.START_DATE_MONTH+"-"+EspressoTestUtils.START_DATE_DAY+ " "
                         + "12:00:00"),
-                Event.DATETIME_SDF.parse("2020-02-11" + " "
-                        + "12:00:00"), description);
-        cr = new ClientResource(Constants.BASE_URI + "events");
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
-        StringRepresentation sr = new StringRepresentation(gson.toJson(event), MediaType.APPLICATION_JSON);
-        jsonResponse = cr.post(sr).getText();
+                Event.DATETIME_SDF.parse(EspressoTestUtils.END_DATE_YEAR+"-"+EspressoTestUtils.END_DATE_MONTH+"-"+EspressoTestUtils.END_DATE_DAY+ " "
+                        + "12:00:00"), EspressoTestUtils.TEST_EVENT_DESCRIPTION);
+        EspressoTestUtils.addEvent(event);
+
+        EspressoTestUtils.initIntent(); // IntentsTestRule does not work, so manage myself Intents init() & release()
     }
 
     @After
-    public void after() throws IOException {
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
-        String jsonResponse = cr.delete().getText();
+    public void after() {
+        EspressoTestUtils.resetSharedPref();
+
+        EspressoTestUtils.releaseIntent(); // IntentsTestRule does not work, so manage myself Intents init() & release()
     }
 
     // TEST ----------------------------------------------------------------------------------------
 
     @Test
-    public void modifyEvent() {
+    public void modifyEventUsingGallery() {
+        modifyEventUsing("Gallery");
+    }
+
+    @Test
+    public void modifyEventUsingCamera() {
+        modifyEventUsing("Camera");
+    }
+
+    private void modifyEventUsing(String usingWhat) {
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.al_emailEditText),
                         childAtPosition(
@@ -138,7 +136,7 @@ public class ModifyEventActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 0)));
-        appCompatEditText2.perform(scrollTo(), replaceText(email), closeSoftKeyboard());
+        appCompatEditText2.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_EMAIL), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText3 = onView(
                 allOf(withId(R.id.al_passwordEditText),
@@ -147,7 +145,7 @@ public class ModifyEventActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 1)));
-        appCompatEditText3.perform(scrollTo(), replaceText(password), closeSoftKeyboard());
+        appCompatEditText3.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_PASSWORD), closeSoftKeyboard());
 
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.al_loginButton), withText("Login"),
@@ -159,7 +157,7 @@ public class ModifyEventActivityTest {
         appCompatButton.perform(scrollTo(), click());
 
         ViewInteraction appCompatTextView = onView(
-                allOf(withId(R.id.aeli_titleTextView), withText("TITLE_ETEST"),
+                allOf(withId(R.id.aeli_titleTextView), withText(EspressoTestUtils.TEST_EVENT_TITLE),
                         childAtPosition(
                                 withParent(withId(R.id.ae_eventsListView)),
                                 0),
@@ -176,8 +174,23 @@ public class ModifyEventActivityTest {
                         isDisplayed()));
         actionMenuItemView.perform(click());
 
+
+
+        // Call stub
+        if (!usingWhat.isEmpty()) {
+            if (usingWhat.equals("Gallery"))
+                TakeImageFromGalleryStub.exec();
+            else if (usingWhat.equals("Camera"))
+                TakeImageFromCameraStub.exec();
+
+            // Perform action on photo button
+            onView(withId(R.id.ade_chooseImageFloatingActionButton)).perform(click());
+        }
+
+
+
         ViewInteraction appCompatEditText4 = onView(
-                allOf(withId(R.id.ade_titleEditText), withText("TITLE_ETEST"),
+                allOf(withId(R.id.ade_titleEditText), withText(EspressoTestUtils.TEST_EVENT_TITLE),
                         childAtPosition(
                                 childAtPosition(
                                         withClassName(is("android.support.v4.widget.NestedScrollView")),
@@ -187,17 +200,17 @@ public class ModifyEventActivityTest {
         appCompatEditText4.perform(click());
 
         ViewInteraction appCompatEditText5 = onView(
-                allOf(withId(R.id.ade_titleEditText), withText("TITLE_ETEST"),
+                allOf(withId(R.id.ade_titleEditText), withText(EspressoTestUtils.TEST_EVENT_TITLE),
                         childAtPosition(
                                 childAtPosition(
                                         withClassName(is("android.support.v4.widget.NestedScrollView")),
                                         0),
                                 0),
                         isDisplayed()));
-        appCompatEditText5.perform(replaceText("TITLE_ETEST_M"));
+        appCompatEditText5.perform(replaceText(EspressoTestUtils.TEST_EVENT_TITLE + "_M"));
 
         ViewInteraction appCompatEditText6 = onView(
-                allOf(withId(R.id.ade_titleEditText), withText("TITLE_ETEST_M"),
+                allOf(withId(R.id.ade_titleEditText), withText(EspressoTestUtils.TEST_EVENT_TITLE + "_M"),
                         childAtPosition(
                                 childAtPosition(
                                         withClassName(is("android.support.v4.widget.NestedScrollView")),
@@ -226,8 +239,8 @@ public class ModifyEventActivityTest {
         appCompatButton2.perform(scrollTo(), click());
 
         ViewInteraction textView = onView(
-                allOf(withId(R.id.aev_descriptionTextView), withText("DESCRIPTION_ETEST")));
-        textView.check(matches(withText("DESCRIPTION_ETEST")));
+                allOf(withId(R.id.aev_descriptionTextView), withText(EspressoTestUtils.TEST_EVENT_DESCRIPTION)));
+        textView.check(matches(withText(EspressoTestUtils.TEST_EVENT_DESCRIPTION)));
     }
 
     private static Matcher<View> childAtPosition(

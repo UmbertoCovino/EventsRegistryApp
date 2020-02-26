@@ -1,42 +1,29 @@
 package com.gmail.upcovino.resteventsregistry.client;
 
-
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
 import com.gmail.upcovino.resteventsregistry.R;
 import com.gmail.upcovino.resteventsregistry.commons.Event;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
-import org.hamcrest.core.IsInstanceOf;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.restlet.data.ChallengeScheme;
-import org.restlet.data.MediaType;
-import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Date;
 
-import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.ViewInteraction;
-import androidx.test.espresso.contrib.PickerActions;
-import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.filters.LargeTest;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
@@ -54,16 +41,12 @@ import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class EventActivityTest {
-    private static String email = "a@gmail.com";
-    private static String password = "p";
-    private static Gson gson;
 
     @Rule
     public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
@@ -76,67 +59,40 @@ public class EventActivityTest {
     // BEFORE/AFTER ALL ----------------------------------------------------------------------------
 
     @BeforeClass
-    public static void resetSharedPref(){
-        Context appContext = getInstrumentation().getTargetContext();
-
-        SharedPreferences preferences =
-                PreferenceManager.getDefaultSharedPreferences(appContext);
-
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.clear();
-        editor.commit();
-    }
-
-    @BeforeClass
     public static void beforeClass() throws IOException, ParseException {
-        gson = new GsonBuilder()
-                .registerTypeAdapter(Date.class, new Constants.DateTypeAdapter())
-                .create();
+        EspressoTestUtils.resetSharedPref();
+        EspressoTestUtils.userRegistration();
 
-        deleteEvents();
+        EspressoTestUtils.deleteAllEvents();
 
-        Event event = new Event("title_test",
-                Event.DATETIME_SDF.parse("2020-03-01"+ " "
+        Event event = new Event(EspressoTestUtils.TEST_EVENT_TITLE,
+                Event.DATETIME_SDF.parse(EspressoTestUtils.START_DATE_YEAR+"-"+EspressoTestUtils.START_DATE_MONTH+"-"+EspressoTestUtils.START_DATE_DAY+ " "
                         + "12:00:00"),
-                Event.DATETIME_SDF.parse("2020-03-08" + " "
-                        + "12:00:00"), "description_test");
-        addEvent(event);
+                Event.DATETIME_SDF.parse(EspressoTestUtils.END_DATE_YEAR+"-"+EspressoTestUtils.END_DATE_MONTH+"-"+EspressoTestUtils.END_DATE_DAY+ " "
+                        + "12:00:00"), EspressoTestUtils.TEST_EVENT_DESCRIPTION);
+        EspressoTestUtils.addEvent(event);
     }
 
     @AfterClass
     public static void afterClass() throws IOException {
         ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
+        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, EspressoTestUtils.TEST_USER_EMAIL, EspressoTestUtils.TEST_USER_PASSWORD);
         String jsonResponse = cr.get().getText();
-        Event[] events = gson.fromJson(jsonResponse, Event[].class);
+        Event[] events = EspressoTestUtils.GSON.fromJson(jsonResponse, Event[].class);
 
         cr = new ClientResource(Constants.BASE_URI + "events/" + events[0].getId() + "/subscribers");
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
+        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, EspressoTestUtils.TEST_USER_EMAIL, EspressoTestUtils.TEST_USER_PASSWORD);
         cr.delete();
 
-        deleteEvents();
+        EspressoTestUtils.deleteAllEvents();
+        EspressoTestUtils.deleteUser();
     }
 
     // BEFORE/AFTER EACH ---------------------------------------------------------------------------
 
     @After
-    public void after2(){
-        resetSharedPref();
-    }
-
-    // UTILS ---------------------------------------------------------------------------------------
-
-    private static void addEvent(Event e) throws IOException {
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
-        StringRepresentation sr = new StringRepresentation(gson.toJson(e), MediaType.APPLICATION_JSON);
-        String jsonResponse = cr.post(sr).getText();
-    }
-
-    private static void deleteEvents() throws IOException {
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
-        String jsonResponse = cr.delete().getText();
+    public void after(){
+        EspressoTestUtils.resetSharedPref();
     }
 
     // TEST ----------------------------------------------------------------------------------------
@@ -159,7 +115,7 @@ public class EventActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 0)));
-        appCompatEditText2.perform(scrollTo(), replaceText("a@gmail.com"), closeSoftKeyboard());
+        appCompatEditText2.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_EMAIL), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText3 = onView(
                 allOf(withId(R.id.al_passwordEditText),
@@ -168,7 +124,7 @@ public class EventActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 1)));
-        appCompatEditText3.perform(scrollTo(), replaceText("p"), closeSoftKeyboard());
+        appCompatEditText3.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_PASSWORD), closeSoftKeyboard());
 
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.al_loginButton), withText("Login"),
@@ -180,7 +136,7 @@ public class EventActivityTest {
         appCompatButton.perform(scrollTo(), click());
 
         ViewInteraction appCompatTextView = onView(
-                allOf(withId(R.id.aeli_titleTextView), withText("title_test"),
+                allOf(withId(R.id.aeli_titleTextView), withText(EspressoTestUtils.TEST_EVENT_TITLE),
                         childAtPosition(
                                 withParent(withId(R.id.ae_eventsListView)),
                                 0),

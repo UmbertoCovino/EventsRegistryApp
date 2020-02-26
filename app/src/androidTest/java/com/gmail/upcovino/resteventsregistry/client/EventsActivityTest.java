@@ -1,6 +1,5 @@
 package com.gmail.upcovino.resteventsregistry.client;
 
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -39,6 +38,7 @@ import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.contrib.PickerActions;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
+import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.filters.LargeTest;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
@@ -64,9 +64,6 @@ import static org.hamcrest.Matchers.is;
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class EventsActivityTest {
-    private String email = "a@gmail.com";
-    private String password = "p";
-    private Gson gson;
 
     @Rule
     public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
@@ -79,75 +76,52 @@ public class EventsActivityTest {
     // BEFORE/AFTER ALL ----------------------------------------------------------------------------
 
     @BeforeClass
-    @AfterClass
-    public static void resetSharedPref(){
-        Context appContext = getInstrumentation().getTargetContext();
+    public static void beforeClass() throws IOException, ParseException {
+        EspressoTestUtils.resetSharedPref();
+        EspressoTestUtils.userRegistration();
 
-        SharedPreferences preferences =
-                PreferenceManager.getDefaultSharedPreferences(appContext);
+        EspressoTestUtils.deleteAllEvents();
 
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.clear();
-        editor.commit();
-    }
-
-    @BeforeClass
-    public void before() throws IOException, ParseException {
-        gson = new GsonBuilder()
-                .registerTypeAdapter(Date.class, new Constants.DateTypeAdapter())
-                .create();
-
-        deleteEvents();
-
-        Event event1 = new Event("title1",
-                Event.DATETIME_SDF.parse("2020-02-01"+ " "
+        Event event1 = new Event(EspressoTestUtils.TEST_EVENT_TITLE + "1",
+                Event.DATETIME_SDF.parse(EspressoTestUtils.START_DATE_YEAR+"-"+EspressoTestUtils.START_DATE_MONTH+"-"+EspressoTestUtils.START_DATE_DAY+ " "
                         + "12:00:00"),
-                Event.DATETIME_SDF.parse("2020-02-08" + " "
-                        + "12:00:00"), "description1");
-        this.addEvent(event1);
+                Event.DATETIME_SDF.parse(EspressoTestUtils.END_DATE_YEAR+"-"+EspressoTestUtils.END_DATE_MONTH+"-"+EspressoTestUtils.END_DATE_DAY+ " "
+                        + "12:00:00"), EspressoTestUtils.TEST_EVENT_DESCRIPTION + "1");
+        EspressoTestUtils.addEvent(event1);
 
-        Event event2 = new Event("title2",
-                Event.DATETIME_SDF.parse("2020-03-01"+ " "
-                        + "12:00:00"),
-                Event.DATETIME_SDF.parse("2020-03-08" + " "
-                        + "12:00:00"), "description2");
-        this.addEvent(event2);
+        Event event2 = new Event(EspressoTestUtils.TEST_EVENT_TITLE + "2",
+                Event.DATETIME_SDF.parse(EspressoTestUtils.START_DATE_YEAR+"-"+EspressoTestUtils.START_DATE_MONTH+"-"+EspressoTestUtils.START_DATE_DAY+ " "
+                        + "13:00:00"),
+                Event.DATETIME_SDF.parse(EspressoTestUtils.END_DATE_YEAR+"-"+EspressoTestUtils.END_DATE_MONTH+"-"+EspressoTestUtils.END_DATE_DAY+ " "
+                        + "12:00:00"), EspressoTestUtils.TEST_EVENT_DESCRIPTION + "2");
+        EspressoTestUtils.addEvent(event2);
 
-        Event event3 = new Event("title3",
-                Event.DATETIME_SDF.parse("2020-04-01"+ " "
-                        + "12:00:00"),
-                Event.DATETIME_SDF.parse("2020-04-08" + " "
-                        + "12:00:00"), "description3");
-        this.addEvent(event3);
+        Event event3 = new Event(EspressoTestUtils.TEST_EVENT_TITLE + "3",
+                Event.DATETIME_SDF.parse(EspressoTestUtils.START_DATE_YEAR+"-"+EspressoTestUtils.START_DATE_MONTH+"-"+EspressoTestUtils.START_DATE_DAY+ " "
+                        + "14:00:00"),
+                Event.DATETIME_SDF.parse(EspressoTestUtils.END_DATE_YEAR+"-"+EspressoTestUtils.END_DATE_MONTH+"-"+EspressoTestUtils.END_DATE_DAY+ " "
+                        + "12:00:00"), EspressoTestUtils.TEST_EVENT_DESCRIPTION + "3");
+        EspressoTestUtils.addEvent(event3);
 
-        Event event4 = new Event("title_test",
-                Event.DATETIME_SDF.parse("2020-03-01"+ " "
-                        + "12:00:00"),
-                Event.DATETIME_SDF.parse("2020-03-08" + " "
-                        + "12:00:00"), "description_test");
-        this.addEvent(event4);
+        Event event4 = new Event(EspressoTestUtils.TEST_EVENT_TITLE + "4",
+                Event.DATETIME_SDF.parse(EspressoTestUtils.START_DATE_YEAR+"-"+EspressoTestUtils.START_DATE_MONTH+"-"+EspressoTestUtils.START_DATE_DAY+ " "
+                        + "15:00:00"),
+                Event.DATETIME_SDF.parse(EspressoTestUtils.END_DATE_YEAR+"-"+EspressoTestUtils.END_DATE_MONTH+"-"+EspressoTestUtils.END_DATE_DAY+ " "
+                        + "12:00:00"), EspressoTestUtils.TEST_EVENT_DESCRIPTION + "4");
+        EspressoTestUtils.addEvent(event4);
     }
 
     @AfterClass
-    public void after() throws IOException {
-        deleteEvents();
+    public static void afterClass() throws IOException {
+        EspressoTestUtils.deleteAllEvents();
+        EspressoTestUtils.deleteUser();
     }
 
     // BEFORE/AFTER EACH ---------------------------------------------------------------------------
 
-    // UTILS ---------------------------------------------------------------------------------------
-
-    private void addEvent(Event e) throws IOException {
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
-        StringRepresentation sr = new StringRepresentation(gson.toJson(e), MediaType.APPLICATION_JSON);
-        String jsonResponse = cr.post(sr).getText();
-    }
-
-    private void deleteEvents() throws IOException {
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
-        String jsonResponse = cr.delete().getText();
+    @After
+    public void after(){
+        EspressoTestUtils.resetSharedPref();
     }
 
     // TEST ----------------------------------------------------------------------------------------
@@ -170,7 +144,7 @@ public class EventsActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 0)));
-        appCompatEditText2.perform(scrollTo(), replaceText("a@gmail.com"), closeSoftKeyboard());
+        appCompatEditText2.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_EMAIL), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText3 = onView(
                 allOf(withId(R.id.al_passwordEditText),
@@ -179,7 +153,7 @@ public class EventsActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 1)));
-        appCompatEditText3.perform(scrollTo(), replaceText("p"), closeSoftKeyboard());
+        appCompatEditText3.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_PASSWORD), closeSoftKeyboard());
 
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.al_loginButton), withText("Login"),
@@ -191,7 +165,7 @@ public class EventsActivityTest {
         appCompatButton.perform(scrollTo(), click());
 
         ViewInteraction appCompatTextView = onView(
-                allOf(withId(R.id.aeli_titleTextView), withText("title_test"),
+                allOf(withId(R.id.aeli_titleTextView), withText(EspressoTestUtils.TEST_EVENT_TITLE + "1"),
                         childAtPosition(
                                 withParent(withId(R.id.ae_eventsListView)),
                                 0),
@@ -223,7 +197,7 @@ public class EventsActivityTest {
     }
 
     @Test
-    public void eventsBetweenTwoDates() {
+    public void eventsBetweenTwoDates() throws IOException {
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.al_emailEditText),
                         childAtPosition(
@@ -240,7 +214,7 @@ public class EventsActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 0)));
-        appCompatEditText2.perform(scrollTo(), replaceText("a@gmail.com"), closeSoftKeyboard());
+        appCompatEditText2.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_EMAIL), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText3 = onView(
                 allOf(withId(R.id.al_passwordEditText),
@@ -249,7 +223,7 @@ public class EventsActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 1)));
-        appCompatEditText3.perform(scrollTo(), replaceText("p"), closeSoftKeyboard());
+        appCompatEditText3.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_PASSWORD), closeSoftKeyboard());
 
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.al_loginButton), withText("Login"),
@@ -266,17 +240,22 @@ public class EventsActivityTest {
                 allOf(withId(R.id.title), withText("Events to show"),
                         childAtPosition(
                                 childAtPosition(
-                                        withClassName(is("android.support.v7.view.menu.ListMenuItemView")),
+                                        withId(R.id.content),//withClassName(is("android.support.v7.view.menu.ListMenuItemView")),
                                         0),
                                 0),
                         isDisplayed()));
         appCompatTextView.perform(click());
 
+        // wait 500 ms to avoid the exception:
+        // "com.google.android.apps.common.testing.ui.espresso.PerformException: Error performing 'single click' on view [...]
+        //      Caused by: java.lang.RuntimeException: Action will not be performed because the target view does not match one or more of the following constraints: at least 90 percent of the view's area is displayed to the user."
+        EspressoTestUtils.waitFor(500);
+
         ViewInteraction appCompatTextView2 = onView(
                 allOf(withId(R.id.title), withText("Events between two dates"),
                         childAtPosition(
                                 childAtPosition(
-                                        withClassName(is("android.support.v7.view.menu.ListMenuItemView")),
+                                        withId(R.id.content),//withClassName(is("android.support.v7.view.menu.ListMenuItemView")),
                                         0),
                                 0),
                         isDisplayed()));
@@ -304,7 +283,7 @@ public class EventsActivityTest {
         appCompatImageButton.perform(click());
 
         // to set Date in DayPicker
-        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 03, 15));
+        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(EspressoTestUtils.START_DATE_YEAR, EspressoTestUtils.START_DATE_MONTH, EspressoTestUtils.START_DATE_DAY));
 
         ViewInteraction appCompatButton2 = onView(
                 allOf(withId(android.R.id.button1), withText("OK"),
@@ -367,7 +346,7 @@ public class EventsActivityTest {
         appCompatImageButton3.perform(click());
 
         // to set Date in DayPicker
-        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2020, 04, 15));
+        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(EspressoTestUtils.END_DATE_YEAR, EspressoTestUtils.END_DATE_MONTH, EspressoTestUtils.END_DATE_DAY));
 
         ViewInteraction appCompatButton4 = onView(
                 allOf(withId(android.R.id.button1), withText("OK"),
@@ -407,9 +386,10 @@ public class EventsActivityTest {
         appCompatButton6.perform(scrollTo(), click());
 
         ViewInteraction textView = onView(
-                allOf(withId(R.id.ae_filterTextView), withText("from 2020-03-15 to 12:00 " +
-                        "to 2020-04-15 to 12:00")));
-        textView.check(matches(withText("from 2020-03-15 to 12:00 to 2020-04-15 to 12:00")));
+                allOf(withId(R.id.ae_filterTextView), withText("from " + EspressoTestUtils.START_DATE_YEAR + "-" + EspressoTestUtils.prependZeroToMonth(EspressoTestUtils.START_DATE_MONTH) + "-" + EspressoTestUtils.START_DATE_DAY + " to 12:00 " +
+                        "to " + EspressoTestUtils.END_DATE_YEAR + "-" + EspressoTestUtils.prependZeroToMonth(EspressoTestUtils.END_DATE_MONTH) + "-" + EspressoTestUtils.END_DATE_DAY + " to 12:00")));
+        textView.check(matches(withText("from " + EspressoTestUtils.START_DATE_YEAR + "-" + EspressoTestUtils.prependZeroToMonth(EspressoTestUtils.START_DATE_MONTH) + "-" + EspressoTestUtils.START_DATE_DAY + " to 12:00 " +
+                "to "+ EspressoTestUtils.END_DATE_YEAR + "-" + EspressoTestUtils.prependZeroToMonth(EspressoTestUtils.END_DATE_MONTH) + "-" + EspressoTestUtils.END_DATE_DAY + " to 12:00")));
     }
 
     private static Matcher<View> childAtPosition(

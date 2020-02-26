@@ -1,6 +1,7 @@
 package com.gmail.upcovino.resteventsregistry.client;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -13,11 +14,15 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.core.IsInstanceOf;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.IOException;
 
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.ViewInteraction;
@@ -43,9 +48,14 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 
+/*
+ * IMPORTANT!
+ * UserActivityTest does not exist because the related activity test is included in this class test
+ */
+
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class UserActivityTest {
+public class ModifyUserActivityTest {
 
     @Rule
     public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
@@ -58,24 +68,31 @@ public class UserActivityTest {
     // BEFORE/AFTER ALL ----------------------------------------------------------------------------
 
     @BeforeClass
-    @AfterClass
-    public static void resetSharedPref(){
-        Context appContext = getInstrumentation().getTargetContext();
-
-        SharedPreferences preferences =
-                PreferenceManager.getDefaultSharedPreferences(appContext);
-
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.clear();
-        editor.commit();
+    public static void beforeClass() throws IOException {
+        EspressoTestUtils.resetSharedPref();
     }
 
     // BEFORE/AFTER EACH ---------------------------------------------------------------------------
 
+    @Before
+    public void before() throws IOException {
+        EspressoTestUtils.userRegistration();
+
+        EspressoTestUtils.initIntent(); // IntentsTestRule does not work, so manage myself Intents init() & release()
+    }
+
+    @After
+    public void after() throws IOException {
+        EspressoTestUtils.resetSharedPref();
+        EspressoTestUtils.deleteUser();
+
+        EspressoTestUtils.releaseIntent(); // IntentsTestRule does not work, so manage myself Intents init() & release()
+    }
+
     // TEST ----------------------------------------------------------------------------------------
 
     @Test
-    public void viewUser() {
+    public void viewUserAndLogout() {
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.al_emailEditText),
                         childAtPosition(
@@ -92,7 +109,7 @@ public class UserActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 0)));
-        appCompatEditText2.perform(scrollTo(), replaceText("a@gmail.com"), closeSoftKeyboard());
+        appCompatEditText2.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_EMAIL), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText3 = onView(
                 allOf(withId(R.id.al_passwordEditText),
@@ -101,7 +118,7 @@ public class UserActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 1)));
-        appCompatEditText3.perform(scrollTo(), replaceText("p"), closeSoftKeyboard());
+        appCompatEditText3.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_PASSWORD), closeSoftKeyboard());
 
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.al_loginButton), withText("Login"),
@@ -132,7 +149,19 @@ public class UserActivityTest {
                         5),
                         isDisplayed()));
         navigationMenuItemView.perform(click());
+    }
 
+    @Test
+    public void viewAndModifyUserUsingGallery() {
+        viewAndModifyUserUsing("Gallery");
+    }
+
+    @Test
+    public void viewAndModifyUserUsingCamera() {
+        viewAndModifyUserUsing("Camera");
+    }
+
+    private void viewAndModifyUserUsing(String usingWhat) {
         ViewInteraction appCompatEditText4 = onView(
                 allOf(withId(R.id.al_emailEditText),
                         childAtPosition(
@@ -149,7 +178,7 @@ public class UserActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 0)));
-        appCompatEditText5.perform(scrollTo(), replaceText("a@gmail.com"), closeSoftKeyboard());
+        appCompatEditText5.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_EMAIL), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText6 = onView(
                 allOf(withId(R.id.al_passwordEditText),
@@ -158,7 +187,7 @@ public class UserActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 1)));
-        appCompatEditText6.perform(scrollTo(), replaceText("p"), closeSoftKeyboard());
+        appCompatEditText6.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_PASSWORD), closeSoftKeyboard());
 
         ViewInteraction appCompatButton2 = onView(
                 allOf(withId(R.id.al_loginButton), withText("Login"),
@@ -199,6 +228,22 @@ public class UserActivityTest {
                                 0),
                         isDisplayed()));
         actionMenuItemView.perform(click());
+
+
+
+        // Call stub
+        if (!usingWhat.isEmpty()) {
+            if (usingWhat.equals("Gallery"))
+                TakeImageFromGalleryStub.exec();
+            else if (usingWhat.equals("Camera"))
+                TakeImageFromCameraStub.exec();
+
+            // Perform action on photo button
+            onView(withId(R.id.ar_chooseImageFloatingActionButton)).perform(click());
+        }
+
+
+
 
         ViewInteraction actionMenuItemView2 = onView(
                 allOf(withId(R.id.menu_done), withText("Done"),
@@ -250,8 +295,8 @@ public class UserActivityTest {
         appCompatButton4.perform(scrollTo(), click());
 
         ViewInteraction textView = onView(
-                allOf(withId(R.id.au_userEmailTextView), withText("a@gmail.com")));
-        textView.check(matches(withText("a@gmail.com")));
+                allOf(withId(R.id.au_userEmailTextView), withText(EspressoTestUtils.TEST_USER_EMAIL)));
+        textView.check(matches(withText(EspressoTestUtils.TEST_USER_EMAIL)));
     }
 
     private static Matcher<View> childAtPosition(

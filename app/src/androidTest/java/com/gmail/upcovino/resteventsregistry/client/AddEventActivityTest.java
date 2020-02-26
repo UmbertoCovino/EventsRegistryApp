@@ -1,8 +1,6 @@
 package com.gmail.upcovino.resteventsregistry.client;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import android.content.Intent;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,8 +8,6 @@ import android.view.ViewParent;
 import android.widget.DatePicker;
 
 import com.gmail.upcovino.resteventsregistry.R;
-import com.gmail.upcovino.resteventsregistry.commons.User;
-import com.google.gson.Gson;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -24,10 +20,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.restlet.data.ChallengeScheme;
-import org.restlet.data.MediaType;
-import org.restlet.representation.StringRepresentation;
-import org.restlet.resource.ClientResource;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -53,24 +45,12 @@ import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class AddEventActivityTest {
-
-    private static String title = "TITLE_ETEST";
-    private static String description = "DESCRIPTION_ETEST";
-
-    private static String name = "LOGIN_NAME_ETEST";
-    private static String surname = "LOGIN_SURNAME_ETEST";
-    private static String email = "LOGIN_ETEST@gmail.com";
-    private static String password = "PASSWORD_ETEST";
-
-    private static Gson gson = new Gson();
-    private static User user;
 
     @Rule
     public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
@@ -83,56 +63,45 @@ public class AddEventActivityTest {
     // BEFORE/AFTER ALL ----------------------------------------------------------------------------
 
     @BeforeClass
-    public static void resetSharedPref(){
-        Context appContext = getInstrumentation().getTargetContext();
-
-        SharedPreferences preferences =
-                PreferenceManager.getDefaultSharedPreferences(appContext);
-
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.clear();
-        editor.commit();
-    }
-
-    @BeforeClass
-    public static void userRegistration() throws IOException {
-        user = new User(name, surname, email, password);
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "users");
-        String jsonResponse = null;
-
-        StringRepresentation sr = new StringRepresentation(gson.toJson(user),
-                MediaType.APPLICATION_JSON);
-        jsonResponse = cr.post(sr).getText();
-    }
-
-    @BeforeClass
-    @AfterClass
-    public static void deleteEvents() throws IOException {
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "events");
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, email, password);
-        String jsonResponse = cr.delete().getText();
+    public static void beforeClass() throws IOException {
+        EspressoTestUtils.resetSharedPref();
+        EspressoTestUtils.userRegistration();
     }
 
     @AfterClass
-    public static void deleteUser() throws IOException {
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "users/"+user.getEmail());
-        String jsonResponse = null;
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, user.getEmail(), user.getPassword());
-
-        jsonResponse = cr.delete().getText();
+    public static void afterClass() throws IOException {
+        EspressoTestUtils.deleteAllEvents();
+        EspressoTestUtils.deleteUser();
     }
 
     // BEFORE/AFTER EACH ---------------------------------------------------------------------------
 
+    @Before
+    public void before(){
+        EspressoTestUtils.initIntent(); // IntentsTestRule does not work, so manage myself Intents init() & release()
+    }
+
     @After
     public void after(){
-        resetSharedPref();
+        EspressoTestUtils.resetSharedPref();
+
+        EspressoTestUtils.releaseIntent(); // IntentsTestRule does not work, so manage myself Intents init() & release()
     }
+
 
     // TEST ----------------------------------------------------------------------------------------
 
     @Test
-    public void addEvent() {
+    public void addEventUsingGallery() {
+        addEventUsing("Gallery");
+    }
+
+    @Test
+    public void addEventUsingCamera() {
+        addEventUsing("Camera");
+    }
+
+    private void addEventUsing(String usingWhat) {
         ViewInteraction appCompatEditText = onView(
                 allOf(withId(R.id.al_emailEditText),
                         childAtPosition(
@@ -149,7 +118,7 @@ public class AddEventActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 0)));
-        appCompatEditText2.perform(scrollTo(), replaceText(email), closeSoftKeyboard());
+        appCompatEditText2.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_EMAIL), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText3 = onView(
                 allOf(withId(R.id.al_passwordEditText),
@@ -158,7 +127,7 @@ public class AddEventActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 1)));
-        appCompatEditText3.perform(scrollTo(), replaceText(password), closeSoftKeyboard());
+        appCompatEditText3.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_PASSWORD), closeSoftKeyboard());
 
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.al_loginButton), withText("Login"),
@@ -179,6 +148,21 @@ public class AddEventActivityTest {
                         isDisplayed()));
         floatingActionButton.perform(click());
 
+
+
+        // Call stub
+        if (!usingWhat.isEmpty()) {
+            if (usingWhat.equals("Gallery"))
+                TakeImageFromGalleryStub.exec();
+            else if (usingWhat.equals("Camera"))
+                TakeImageFromCameraStub.exec();
+
+            // Perform action on photo button
+            onView(withId(R.id.ade_chooseImageFloatingActionButton)).perform(click());
+        }
+
+
+
         ViewInteraction appCompatEditText4 = onView(
                 allOf(withId(R.id.ade_titleEditText),
                         childAtPosition(
@@ -187,7 +171,7 @@ public class AddEventActivityTest {
                                         0),
                                 0),
                         isDisplayed()));
-        appCompatEditText4.perform(replaceText(title), closeSoftKeyboard());
+        appCompatEditText4.perform(replaceText(EspressoTestUtils.TEST_EVENT_TITLE), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText5 = onView(
                 allOf(withId(R.id.ade_descriptionEditText),
@@ -197,7 +181,7 @@ public class AddEventActivityTest {
                                         0),
                                 1),
                         isDisplayed()));
-        appCompatEditText5.perform(replaceText(description), closeSoftKeyboard());
+        appCompatEditText5.perform(replaceText(EspressoTestUtils.TEST_EVENT_DESCRIPTION), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText6 = onView(
                 allOf(withId(R.id.ade_dateStartEditText),
@@ -220,23 +204,9 @@ public class AddEventActivityTest {
                         isDisplayed()));
         appCompatImageButton.perform(click());
 
-        Date date = new Date();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        int startDateDay = cal.get(Calendar.DATE) + 1;
-        int startDateMonth = cal.get(Calendar.MONTH) + 1;
-        int startDateYear = cal.get(Calendar.YEAR);
-
-        cal.add(Calendar.DATE, 1);
-        int endDateDay = cal.get(Calendar.DATE);
-        int endDateMonth = cal.get(Calendar.MONTH) + 1;
-        int endDateYear = cal.get(Calendar.YEAR);
-
-        Log.e("TAG", startDateDay+"-"+startDateMonth+"-"+startDateYear+" -> "+endDateDay+"-"+endDateMonth+"-"+endDateYear);
-
 
         // to set Date in DayPicker
-        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(startDateYear, startDateMonth, startDateDay));
+        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(EspressoTestUtils.START_DATE_YEAR, EspressoTestUtils.START_DATE_MONTH, EspressoTestUtils.START_DATE_DAY));
 
         ViewInteraction appCompatButton2 = onView(
                 allOf(withId(android.R.id.button1), withText("OK"),
@@ -288,7 +258,7 @@ public class AddEventActivityTest {
         appCompatImageButton2.perform(click());
 
         // to set Date in DayPicker
-        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform((ViewAction) PickerActions.setDate(endDateYear, endDateMonth, endDateDay));
+        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform((ViewAction) PickerActions.setDate(EspressoTestUtils.END_DATE_YEAR, EspressoTestUtils.END_DATE_MONTH, EspressoTestUtils.END_DATE_DAY));
 
         ViewInteraction appCompatButton4 = onView(
                 allOf(withId(android.R.id.button1), withText("OK"),
@@ -338,14 +308,14 @@ public class AddEventActivityTest {
         appCompatButton6.perform(scrollTo(), click());
 
         ViewInteraction textView = onView(
-                allOf(withId(R.id.aeli_titleTextView), withText(title),
+                allOf(withId(R.id.aeli_titleTextView), withText(EspressoTestUtils.TEST_EVENT_TITLE),
                         childAtPosition(
                                 childAtPosition(
                                         withId(R.id.ae_eventsListView),
                                         0),
                                 0),
                         isDisplayed()));
-        textView.check(matches(withText(title)));
+        textView.check(matches(withText(EspressoTestUtils.TEST_EVENT_TITLE)));
     }
 
     private static Matcher<View> childAtPosition(

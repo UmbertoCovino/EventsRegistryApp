@@ -1,6 +1,5 @@
 package com.gmail.upcovino.resteventsregistry.client;
 
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -30,6 +29,7 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
@@ -61,13 +61,6 @@ import static org.hamcrest.Matchers.is;
 @RunWith(AndroidJUnit4.class)
 public class LoginActivityTest {
 
-    private static String name = "LOGIN_NAME_ETEST";
-    private static String surname = "LOGIN_SURNAME_ETEST";
-    private static String email = "LOGIN_ETEST@gmail.com";
-    private static String password = "PASSWORD_ETEST";
-    private static Gson gson = new Gson();
-    private static User user;
-
     @Rule
     public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
 
@@ -79,42 +72,21 @@ public class LoginActivityTest {
     // BEFORE/AFTER ALL ----------------------------------------------------------------------------
 
     @BeforeClass
-    public static void resetSharedPref(){
-        Context appContext = getInstrumentation().getTargetContext();
-
-        SharedPreferences preferences =
-                PreferenceManager.getDefaultSharedPreferences(appContext);
-
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.clear();
-        editor.commit();
-    }
-
-    @BeforeClass
-    public static void userRegistration() throws IOException {
-        user = new User(name, surname, email, password);
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "users");
-        String jsonResponse = null;
-
-        StringRepresentation sr = new StringRepresentation(gson.toJson(user),
-                MediaType.APPLICATION_JSON);
-        jsonResponse = cr.post(sr).getText();
+    public static void beforeClass() throws IOException {
+        EspressoTestUtils.resetSharedPref();
+        EspressoTestUtils.userRegistration();
     }
 
     @AfterClass
-    public static void deleteUser() throws IOException {
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "users/"+user.getEmail());
-        String jsonResponse = null;
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, user.getEmail(), user.getPassword());
-
-        jsonResponse = cr.delete().getText();
+    public static void afterClass() throws IOException {
+        EspressoTestUtils.deleteUser();
     }
 
     // BEFORE/AFTER EACH ---------------------------------------------------------------------------
 
     @After
     public void after(){
-        resetSharedPref();
+        EspressoTestUtils.resetSharedPref();
     }
 
     // TEST ----------------------------------------------------------------------------------------
@@ -128,7 +100,7 @@ public class LoginActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 0)));
-        appCompatEditText.perform(scrollTo(), replaceText(email), closeSoftKeyboard());
+        appCompatEditText.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_EMAIL), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText5 = onView(
                 allOf(withId(R.id.al_passwordEditText),
@@ -137,7 +109,7 @@ public class LoginActivityTest {
                                         withClassName(is("android.widget.ScrollView")),
                                         0),
                                 1)));
-        appCompatEditText5.perform(scrollTo(), replaceText(password), closeSoftKeyboard());
+        appCompatEditText5.perform(scrollTo(), replaceText(EspressoTestUtils.TEST_USER_PASSWORD), closeSoftKeyboard());
 
         ViewInteraction appCompatButton = onView(
                 allOf(withId(R.id.al_loginButton), withText("Login"),

@@ -17,6 +17,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,6 +31,7 @@ import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.filters.LargeTest;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 
 import static androidx.test.espresso.Espresso.onView;
@@ -49,17 +51,9 @@ import static org.hamcrest.Matchers.is;
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class RegistrationActivityTest {
-    private String name = "SIGNIN_NAME_ETEST";
-    private String surname = "SIGNIN_SURNAME_ETEST";
-    private String email = "SIGNIN_ETEST@gmail.com";
-    private String password = "PASSWORD_ETEST";
-    private Gson gson = new Gson();
-    private User user;
 
-//    @Rule
-//    public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
     @Rule
-    public IntentsTestRule<LoginActivity> intentsRule = new IntentsTestRule<>(LoginActivity.class, true, false);
+    public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
 
     @Rule
     public GrantPermissionRule mGrantPermissionRule =
@@ -69,38 +63,38 @@ public class RegistrationActivityTest {
     // BEFORE/AFTER ALL ----------------------------------------------------------------------------
 
     @BeforeClass
-    @AfterClass
-    public static void resetSharedPref(){
-        Context appContext = getInstrumentation().getTargetContext();
-
-        SharedPreferences preferences =
-                PreferenceManager.getDefaultSharedPreferences(appContext);
-
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.clear();
-        editor.commit();
+    public static void beforeClass() throws IOException {
+        EspressoTestUtils.resetSharedPref();
     }
 
     // BEFORE/AFTER EACH ---------------------------------------------------------------------------
 
-    @After
-    public void deleteUser() throws IOException {
-        user = new User(name, surname, email, password);
-        ClientResource cr = new ClientResource(Constants.BASE_URI + "users/"+user.getEmail());
-        String jsonResponse = null;
-        cr.setChallengeResponse(ChallengeScheme.HTTP_BASIC, user.getEmail(), user.getPassword());
+    @Before
+    public void before() {
+        EspressoTestUtils.initIntent(); // IntentsTestRule does not work, so manage myself Intents init() & release()
+    }
 
-        jsonResponse = cr.delete().getText();
+    @After
+    public void after() throws IOException {
+        EspressoTestUtils.resetSharedPref();
+        EspressoTestUtils.deleteUser();
+
+        EspressoTestUtils.releaseIntent(); // IntentsTestRule does not work, so manage myself Intents init() & release()
     }
 
     // TEST ----------------------------------------------------------------------------------------
 
+    @Test
+    public void signinUsingGallery() {
+        signinUsing("Gallery");
+    }
+
+    @Test
+    public void signinUsingCamera() {
+        signinUsing("Camera");
+    }
+
     private void signinUsing(String usingWhat) {
-        Intent intent = new Intent();
-        intent.putExtra("LoginActivity", "LoginActivity");
-        intentsRule.launchActivity(intent);
-
-
         ViewInteraction appCompatTextView = onView(
                 allOf(withId(R.id.al_signInTextView), withText("Sign in now!"),
                         childAtPosition(
@@ -110,6 +104,7 @@ public class RegistrationActivityTest {
                                                 5)),
                                 1)));
         appCompatTextView.perform(scrollTo(), click());
+
 
 
         // Call stub
@@ -133,7 +128,7 @@ public class RegistrationActivityTest {
                                         0),
                                 0),
                         isDisplayed()));
-        appCompatEditText.perform(replaceText(name), closeSoftKeyboard());
+        appCompatEditText.perform(replaceText(EspressoTestUtils.TEST_USER_NAME), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText2 = onView(
                 allOf(withId(R.id.ar_surnameEditText),
@@ -143,7 +138,7 @@ public class RegistrationActivityTest {
                                         0),
                                 1),
                         isDisplayed()));
-        appCompatEditText2.perform(replaceText(surname), closeSoftKeyboard());
+        appCompatEditText2.perform(replaceText(EspressoTestUtils.TEST_USER_SURNAME), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText3 = onView(
                 allOf(withId(R.id.ar_emailEditText),
@@ -153,7 +148,7 @@ public class RegistrationActivityTest {
                                         0),
                                 2),
                         isDisplayed()));
-        appCompatEditText3.perform(replaceText(email), closeSoftKeyboard());
+        appCompatEditText3.perform(replaceText(EspressoTestUtils.TEST_USER_EMAIL), closeSoftKeyboard());
 
         ViewInteraction appCompatEditText4 = onView(
                 allOf(withId(R.id.ar_passwordEditText),
@@ -163,7 +158,7 @@ public class RegistrationActivityTest {
                                         0),
                                 3),
                         isDisplayed()));
-        appCompatEditText4.perform(replaceText(password), closeSoftKeyboard());
+        appCompatEditText4.perform(replaceText(EspressoTestUtils.TEST_USER_PASSWORD), closeSoftKeyboard());
 
         ViewInteraction actionMenuItemView = onView(
                 allOf(withId(R.id.menu_done), withText("Done"),
@@ -187,16 +182,6 @@ public class RegistrationActivityTest {
         ViewInteraction textView = onView(
                 allOf(withId(android.R.id.message), withText("Do you want enable telegram notifications?")));
         textView.check(matches(withText("Do you want enable telegram notifications?")));
-    }
-
-    @Test
-    public void signinUsingGallery() {
-        signinUsing("Gallery");
-    }
-
-    @Test
-    public void signinUsingCamera() {
-        signinUsing("Camera");
     }
 
     private static Matcher<View> childAtPosition(
