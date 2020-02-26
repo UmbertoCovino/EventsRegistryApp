@@ -115,7 +115,8 @@
             app:layout_constraintHorizontal_bias="0.478"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-            app:layout_constraintVertical_bias="0.118" />
+            app:layout_constraintVertical_bias="0.118"
+            android:layout_marginLeft="8dp" />
 
         <LinearLayout
             android:id="@+id/linearLayout"
@@ -141,7 +142,8 @@
                 android:textAlignment="textEnd"
                 android:textSize="18sp"
                 tools:layout_editor_absoluteX="63dp"
-                tools:layout_editor_absoluteY="344dp" />
+                tools:layout_editor_absoluteY="344dp"
+                android:layout_gravity="end" />
 
             <TextView
                 android:id="@+id/al_signInTextView"
@@ -153,7 +155,8 @@
                 android:textColor="@color/colorPrimary"
                 android:textSize="18sp"
                 tools:layout_editor_absoluteX="236dp"
-                tools:layout_editor_absoluteY="344dp" />
+                tools:layout_editor_absoluteY="344dp"
+                android:layout_gravity="start" />
         </LinearLayout>
 
     </android.support.constraint.ConstraintLayout>
