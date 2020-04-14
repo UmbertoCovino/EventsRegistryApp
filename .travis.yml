@@ -1,12 +1,13 @@
 language: android
 jdk: oraclejdk8
+before_install:
+  - chmod +x gradlew
+  - echo yes | sdkmanager "build-tools;27.0.1"
 android:
   components:
     - tools
     - build-tools-27.0.3
     - android-27
-before_install:
-    - chmod +x gradlew
 script:
   - ./gradlew build
   
